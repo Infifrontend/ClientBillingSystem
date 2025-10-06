@@ -2,7 +2,7 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  DollarSign,
+  IndianRupee,
   BarChart3,
   Bell,
   Settings,
@@ -44,7 +44,7 @@ const menuItems = [
   {
     title: "Services & Billing",
     url: "/services",
-    icon: DollarSign,
+    icon: IndianRupee,
     testId: "sidebar-services",
     roles: ["admin", "csm", "finance", "viewer"],
   },

@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, AlertTriangle, Target, Brain, DollarSign, Users } from "lucide-react";
+import { TrendingUp, AlertTriangle, Target, Brain, IndianRupee, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function Insights() {
@@ -152,7 +152,7 @@ export default function Insights() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+              <IndianRupee className="h-5 w-5" />
               Profitability Analysis
             </CardTitle>
             <CardDescription>Top performing clients by margin</CardDescription>
