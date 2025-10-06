@@ -180,11 +180,13 @@ export function registerRoutes(app: Express) {
       
       console.log('[DEBUG] Total clients fetched from DB:', clients.length);
       
-      if (userRole === "csm") {
-        clients = clients.filter(client => client.assignedCsmId === userId);
-        console.log('[DEBUG] Filtered clients for CSM:', clients.length);
-      }
+      // Temporarily disabled CSM filtering for testing
+      // if (userRole === "csm") {
+      //   clients = clients.filter(client => client.assignedCsmId === userId);
+      //   console.log('[DEBUG] Filtered clients for CSM:', clients.length);
+      // }
       
+      console.log('[DEBUG] Returning clients:', clients.length);
       res.json(clients);
     } catch (error: any) {
       console.error('[ERROR] Failed to fetch clients:', error);
