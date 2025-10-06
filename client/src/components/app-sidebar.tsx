@@ -141,31 +141,26 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3 mb-3">
-          {user?.profileImageUrl ? (
-            <img
-              src={user.profileImageUrl}
-              alt={`${user.firstName} ${user.lastName}`}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <span className="text-sm font-medium">
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
-              </span>
-            </div>
-          )}
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-sm font-medium text-white">
+              AD
+            </span>
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate" data-testid="user-name">
-              {user?.firstName} {user?.lastName}
+              Admin User
             </p>
-            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+            <p className="text-xs text-muted-foreground truncate">admin@infiniti.com</p>
           </div>
         </div>
         <Button
           variant="outline"
           size="sm"
           className="w-full"
-          onClick={() => window.location.href = "/api/logout"}
+          onClick={() => {
+            sessionStorage.removeItem("isLoggedIn");
+            window.location.href = "/";
+          }}
           data-testid="button-logout"
         >
           <LogOut className="h-4 w-4 mr-2" />

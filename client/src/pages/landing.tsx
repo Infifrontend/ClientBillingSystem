@@ -43,7 +43,7 @@ export default function Landing() {
             <Button
               size="lg"
               className="px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/login"}
               data-testid="button-login"
             >
               Sign In to Dashboard
@@ -161,7 +161,7 @@ export default function Landing() {
             <Button
               size="lg"
               className="px-10 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/login"}
             >
               Get Started Today
               <ArrowRight className="ml-2 h-5 w-5" />

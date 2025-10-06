@@ -16,11 +16,13 @@ import Agreements from "@/pages/agreements";
 import Reports from "@/pages/reports";
 import Insights from "@/pages/insights";
 import NotFound from "@/pages/not-found";
+import Login from "@/pages/login";
 
 function AuthenticatedRoutes() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/clients" component={ClientsList} />
       <Route path="/clients/new" component={ClientForm} />
       <Route path="/clients/:id" component={ClientDetail} />
@@ -38,6 +40,7 @@ function PublicRoutes() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -45,7 +48,7 @@ function PublicRoutes() {
 
 function AuthenticatedApp() {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   const style = {
     "--sidebar-width": "20rem",
     "--sidebar-width-icon": "4rem",
