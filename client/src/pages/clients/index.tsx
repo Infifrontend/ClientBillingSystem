@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Users, Building2, Mail, Phone, MapPin } from "lucide-react";
 import { Link } from "wouter";
 import type { Client } from "@shared/schema";
@@ -112,64 +113,93 @@ export default function ClientsList() {
       </Card>
 
       {clientsLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-24 bg-muted rounded" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 bg-muted rounded" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       ) : clients && clients.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clients.map((client) => (
-            <Link key={client.id} href={`/clients/${client.id}`}>
-              <Card className="hover-elevate active-elevate-2 cursor-pointer h-full" data-testid={`client-card-${client.id}`}>
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-6 w-6 text-primary" />
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead>Client Name</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Industry</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Region</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {clients.map((client) => (
+                  <TableRow key={client.id} className="cursor-pointer hover:bg-muted/50" data-testid={`client-row-${client.id}`}>
+                    <TableCell>
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-lg" data-testid={`client-name-${client.id}`}>{client.name}</h3>
-                        <Badge variant={client.status === "active" ? "default" : "secondary"}>
-                          {client.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      <span className="capitalize">{client.industry.replace(/_/g, ' ')}</span>
-                    </div>
-                    {client.email && (
+                    </TableCell>
+                    <TableCell>
+                      <Link href={`/clients/${client.id}`}>
+                        <div className="font-semibold hover:text-primary transition-colors" data-testid={`client-name-${client.id}`}>
+                          {client.name}
+                        </div>
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={client.status === "active" ? "default" : "secondary"}>
+                        {client.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        <span className="truncate">{client.email}</span>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="capitalize">{client.industry.replace(/_/g, ' ')}</span>
                       </div>
-                    )}
-                    {client.phone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        <span>{client.phone}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        {client.email && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-3 w-3 text-muted-foreground" />
+                            <span className="truncate max-w-[200px]">{client.email}</span>
+                          </div>
+                        )}
+                        {client.phone && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-3 w-3 text-muted-foreground" />
+                            <span>{client.phone}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {client.region && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{client.region}</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+                    </TableCell>
+                    <TableCell>
+                      {client.region && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{client.region}</span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/clients/${client.id}`}>
+                        <Button variant="ghost" size="sm" data-testid={`view-client-${client.id}`}>
+                          View
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-12 text-center">
