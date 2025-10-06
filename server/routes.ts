@@ -57,8 +57,6 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  });
-
   app.get("/api/dashboard/stats", isAuthenticated, async (req: Request, res: Response) => {
     
     try {
