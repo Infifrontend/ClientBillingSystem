@@ -170,18 +170,24 @@ export function registerRoutes(app: Express) {
       const userId = req.user?.claims.sub;
       const userRole = req.user?.role;
       
+      console.log('[DEBUG] Fetching clients for user:', userId, 'with role:', userRole);
+      
       let clients = await storage.getClients({
         search: search as string,
         status: status as string,
         industry: industry as string,
       });
       
+      console.log('[DEBUG] Total clients fetched from DB:', clients.length);
+      
       if (userRole === "csm") {
         clients = clients.filter(client => client.assignedCsmId === userId);
+        console.log('[DEBUG] Filtered clients for CSM:', clients.length);
       }
       
       res.json(clients);
     } catch (error: any) {
+      console.error('[ERROR] Failed to fetch clients:', error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -208,10 +214,13 @@ export function registerRoutes(app: Express) {
 
   app.post("/api/clients", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
+      console.log('[DEBUG] Creating client with data:', req.body);
       const validatedData = insertClientSchema.parse(req.body);
       const client = await storage.createClient(validatedData);
+      console.log('[DEBUG] Client created successfully:', client.id);
       res.json(client);
     } catch (error: any) {
+      console.error('[ERROR] Failed to create client:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }

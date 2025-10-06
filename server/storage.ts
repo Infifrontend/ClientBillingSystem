@@ -147,7 +147,9 @@ export class DrizzleStorage implements IStorage {
       query = query.where(and(...conditions)) as any;
     }
 
-    return await query.orderBy(desc(schema.clients.createdAt));
+    const results = await query.orderBy(desc(schema.clients.createdAt));
+    console.log('[STORAGE] getClients query returned:', results.length, 'clients');
+    return results;
   }
 
   async getClient(id: string): Promise<Client | undefined> {
