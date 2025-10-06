@@ -2,18 +2,128 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, FileText, Filter, DollarSign, Calendar } from "lucide-react";
+import { FileDown, FileText, Filter, DollarSign, Calendar as CalendarIcon, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+
+// Static data for Outstanding Report
+const staticOutstandingData = {
+  invoices: [
+    {
+      id: "1",
+      clientName: "Acme Corporation",
+      invoiceNumber: "INV-2024-001",
+      dueDate: "2024-01-15",
+      amount: 25000,
+      currency: "USD",
+      agingDays: 45,
+      status: "overdue"
+    },
+    {
+      id: "2",
+      clientName: "TechStart Inc",
+      invoiceNumber: "INV-2024-002",
+      dueDate: "2024-02-20",
+      amount: 18500,
+      currency: "USD",
+      agingDays: 10,
+      status: "pending"
+    },
+    {
+      id: "3",
+      clientName: "Global Enterprises",
+      invoiceNumber: "INV-2024-003",
+      dueDate: "2024-01-30",
+      amount: 42000,
+      currency: "USD",
+      agingDays: 32,
+      status: "overdue"
+    },
+    {
+      id: "4",
+      clientName: "Innovation Labs",
+      invoiceNumber: "INV-2024-004",
+      dueDate: "2024-02-28",
+      amount: 15000,
+      currency: "USD",
+      agingDays: 5,
+      status: "pending"
+    },
+    {
+      id: "5",
+      clientName: "Digital Solutions",
+      invoiceNumber: "INV-2024-005",
+      dueDate: "2024-01-10",
+      amount: 33000,
+      currency: "USD",
+      agingDays: 52,
+      status: "overdue"
+    }
+  ]
+};
+
+// Static data for Revenue Report
+const staticRevenueData = {
+  data: [
+    {
+      id: "1",
+      clientName: "Acme Corporation",
+      revenueCollected: 150000,
+      pending: 25000,
+      serviceType: "Consulting",
+      location: "New York, NY"
+    },
+    {
+      id: "2",
+      clientName: "TechStart Inc",
+      revenueCollected: 85000,
+      pending: 18500,
+      serviceType: "Development",
+      location: "San Francisco, CA"
+    },
+    {
+      id: "3",
+      clientName: "Global Enterprises",
+      revenueCollected: 220000,
+      pending: 42000,
+      serviceType: "Support",
+      location: "London, UK"
+    },
+    {
+      id: "4",
+      clientName: "Innovation Labs",
+      revenueCollected: 95000,
+      pending: 15000,
+      serviceType: "Training",
+      location: "Austin, TX"
+    },
+    {
+      id: "5",
+      clientName: "Digital Solutions",
+      revenueCollected: 180000,
+      pending: 33000,
+      serviceType: "Consulting",
+      location: "Seattle, WA"
+    }
+  ]
+};
+
+// Static clients for filtering
+const staticClients = [
+  { id: "1", name: "Acme Corporation" },
+  { id: "2", name: "TechStart Inc" },
+  { id: "3", name: "Global Enterprises" },
+  { id: "4", name: "Innovation Labs" },
+  { id: "5", name: "Digital Solutions" }
+];
 
 export default function Reports() {
   const { toast } = useToast();
@@ -39,29 +149,63 @@ export default function Reports() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: clients } = useQuery<any[]>({
-    queryKey: ["/api/clients"],
-  });
-
-  const { data: outstandingReport } = useQuery<any>({
-    queryKey: ["/api/reports/outstanding", { clients: selectedClients, dateRange }],
-  });
-
-  const { data: revenueReport } = useQuery<any>({
-    queryKey: ["/api/reports/revenue", { clients: selectedClients, dateRange }],
-  });
-
   const handleExport = (format: "excel" | "pdf" | "csv") => {
-    toast({
-      title: "Exporting report",
-      description: `Preparing ${format.toUpperCase()} export...`,
-    });
+    const data = reportType === "outstanding" ? staticOutstandingData.invoices : staticRevenueData.data;
+    
+    if (format === "csv") {
+      // Generate CSV
+      const headers = reportType === "outstanding" 
+        ? ["Client", "Invoice No", "Due Date", "Amount", "Currency", "Overdue Days", "Status"]
+        : ["Client", "Revenue Collected", "Pending", "Service Type", "Location"];
+      
+      const rows = data.map(item => {
+        if (reportType === "outstanding") {
+          const inv = item as any;
+          return [inv.clientName, inv.invoiceNumber, inv.dueDate, inv.amount, inv.currency, inv.agingDays, inv.status];
+        } else {
+          const rev = item as any;
+          return [rev.clientName, rev.revenueCollected, rev.pending, rev.serviceType, rev.location];
+        }
+      });
+      
+      const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${reportType}_report_${format}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Export successful",
+        description: `${format.toUpperCase()} file downloaded successfully`,
+      });
+    } else if (format === "excel" || format === "pdf") {
+      // Simulate export for Excel/PDF (in real app, you'd use libraries like xlsx or jsPDF)
+      toast({
+        title: "Export in progress",
+        description: `Generating ${format.toUpperCase()} file... (This is a demo)`,
+      });
+      
+      setTimeout(() => {
+        toast({
+          title: "Export complete",
+          description: `${format.toUpperCase()} file would be downloaded in production`,
+        });
+      }, 1500);
+    }
   };
 
   const toggleClientSelection = (clientId: string) => {
     setSelectedClients((prev) =>
       prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId]
     );
+  };
+
+  const clearFilters = () => {
+    setSelectedClients([]);
+    setDateRange({ from: undefined, to: undefined });
   };
 
   if (isLoading || !isAuthenticated) {
@@ -81,210 +225,232 @@ export default function Reports() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Client (Multi-select)</label>
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Filters & Export</CardTitle>
+          <CardDescription>Filter data and export reports in your preferred format</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Client (Multi-select)</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start" data-testid="select-clients">
-                    <Filter className="h-4 w-4 mr-2" />
-                    {selectedClients.length === 0
-                      ? "All Clients"
-                      : `${selectedClients.length} client(s) selected`}
+                  <Button variant="outline" className="w-full justify-between h-11" data-testid="select-clients">
+                    <span className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      {selectedClients.length === 0
+                        ? "All Clients"
+                        : `${selectedClients.length} client(s) selected`}
+                    </span>
+                    {selectedClients.length > 0 && (
+                      <X 
+                        className="h-4 w-4 hover:bg-accent rounded-sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedClients([]);
+                        }}
+                      />
+                    )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80">
-                  <div className="space-y-2">
-                    <div className="font-medium text-sm mb-2">Select Clients</div>
-                    {clients?.map((client) => (
-                      <div key={client.id} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={`client-${client.id}`}
-                          checked={selectedClients.includes(client.id)}
-                          onChange={() => toggleClientSelection(client.id)}
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                        <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
-                          {client.name}
-                        </label>
-                      </div>
-                    ))}
-                    {clients?.length === 0 && (
-                      <div className="text-sm text-muted-foreground">No clients available</div>
-                    )}
+                <PopoverContent className="w-80 p-4" align="start">
+                  <div className="space-y-3">
+                    <div className="font-semibold text-sm border-b pb-2">Select Clients</div>
+                    <div className="max-h-60 overflow-y-auto space-y-2">
+                      {staticClients.map((client) => (
+                        <div key={client.id} className="flex items-center space-x-3 p-2 hover:bg-accent rounded-md transition-colors">
+                          <input
+                            type="checkbox"
+                            id={`client-${client.id}`}
+                            checked={selectedClients.includes(client.id)}
+                            onChange={() => toggleClientSelection(client.id)}
+                            className="h-4 w-4 rounded border-input cursor-pointer"
+                          />
+                          <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
+                            {client.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </PopoverContent>
               </Popover>
             </div>
 
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Date Range</label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Date Range</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-between h-11 font-normal",
                       !dateRange.from && "text-muted-foreground"
                     )}
                     data-testid="select-date-range"
                   >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    {dateRange.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
-                        </>
+                    <span className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4" />
+                      {dateRange.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "MMM dd, yyyy")} - {format(dateRange.to, "MMM dd, yyyy")}
+                          </>
+                        ) : (
+                          format(dateRange.from, "MMM dd, yyyy")
+                        )
                       ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      "Pick a date range"
+                        "Pick a date range"
+                      )}
+                    </span>
+                    {dateRange.from && (
+                      <X 
+                        className="h-4 w-4 hover:bg-accent rounded-sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDateRange({ from: undefined, to: undefined });
+                        }}
+                      />
                     )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
+                  <Calendar
                     mode="range"
                     selected={{ from: dateRange.from, to: dateRange.to }}
                     onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
                     numberOfMonths={2}
+                    className="rounded-md"
                   />
                 </PopoverContent>
               </Popover>
             </div>
+          </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel">
-                <FileDown className="h-4 w-4 mr-2" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf">
-                <FileDown className="h-4 w-4 mr-2" />
-                PDF
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv">
-                <FileDown className="h-4 w-4 mr-2" />
-                CSV
-              </Button>
-            </div>
+          <div className="flex flex-wrap gap-3 pt-2 border-t">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={clearFilters}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear Filters
+            </Button>
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2">
+              <FileDown className="h-4 w-4" />
+              Excel
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2">
+              <FileDown className="h-4 w-4" />
+              PDF
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2">
+              <FileDown className="h-4 w-4" />
+              CSV
+            </Button>
           </div>
         </CardContent>
       </Card>
 
       <Tabs defaultValue="outstanding" onValueChange={setReportType}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="outstanding" data-testid="tab-outstanding">
-            <FileText className="h-4 w-4 mr-2" />
+        <TabsList className="grid w-full max-w-md grid-cols-2 h-11">
+          <TabsTrigger value="outstanding" data-testid="tab-outstanding" className="gap-2">
+            <FileText className="h-4 w-4" />
             Outstanding Report
           </TabsTrigger>
-          <TabsTrigger value="revenue" data-testid="tab-revenue">
-            <DollarSign className="h-4 w-4 mr-2" />
+          <TabsTrigger value="revenue" data-testid="tab-revenue" className="gap-2">
+            <DollarSign className="h-4 w-4" />
             Revenue Report
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="outstanding" className="mt-6">
-          <Card>
+          <Card className="border-2">
             <CardHeader>
               <CardTitle>Outstanding Report</CardTitle>
               <CardDescription>Pending payments by client with invoice details</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Invoice No</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-center">Overdue Days</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {outstandingReport?.invoices && outstandingReport.invoices.length > 0 ? (
-                    outstandingReport.invoices.map((invoice: any) => (
-                      <TableRow key={invoice.id} data-testid={`outstanding-invoice-${invoice.id}`}>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold">Client</TableHead>
+                      <TableHead className="font-semibold">Invoice No</TableHead>
+                      <TableHead className="font-semibold">Due Date</TableHead>
+                      <TableHead className="text-right font-semibold">Amount</TableHead>
+                      <TableHead className="text-center font-semibold">Overdue Days</TableHead>
+                      <TableHead className="text-center font-semibold">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {staticOutstandingData.invoices.map((invoice) => (
+                      <TableRow key={invoice.id} data-testid={`outstanding-invoice-${invoice.id}`} className="hover:bg-muted/30">
                         <TableCell className="font-medium">{invoice.clientName}</TableCell>
-                        <TableCell>{invoice.invoiceNumber}</TableCell>
-                        <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right font-mono">
+                        <TableCell className="font-mono text-sm">{invoice.invoiceNumber}</TableCell>
+                        <TableCell>{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
+                        <TableCell className="text-right font-mono font-semibold">
                           {invoice.currency} {invoice.amount.toLocaleString()}
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"}>
+                          <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"} className="font-semibold">
                             {invoice.agingDays} days
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant={invoice.status === "overdue" ? "destructive" : "default"}>
+                          <Badge variant={invoice.status === "overdue" ? "destructive" : "default"} className="capitalize">
                             {invoice.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                        <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                        <p>No outstanding invoices</p>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="revenue" className="mt-6">
-          <Card>
+          <Card className="border-2">
             <CardHeader>
               <CardTitle>Revenue Report</CardTitle>
               <CardDescription>Revenue collected and pending by client</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead className="text-right">Revenue Collected</TableHead>
-                    <TableHead className="text-right">Pending</TableHead>
-                    <TableHead>Service Type</TableHead>
-                    <TableHead>Location</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {revenueReport?.data && revenueReport.data.length > 0 ? (
-                    revenueReport.data.map((item: any) => (
-                      <TableRow key={item.id} data-testid={`revenue-item-${item.id}`}>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold">Client</TableHead>
+                      <TableHead className="text-right font-semibold">Revenue Collected</TableHead>
+                      <TableHead className="text-right font-semibold">Pending</TableHead>
+                      <TableHead className="font-semibold">Service Type</TableHead>
+                      <TableHead className="font-semibold">Location</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {staticRevenueData.data.map((item) => (
+                      <TableRow key={item.id} data-testid={`revenue-item-${item.id}`} className="hover:bg-muted/30">
                         <TableCell className="font-medium">{item.clientName}</TableCell>
-                        <TableCell className="text-right font-mono text-chart-3">
+                        <TableCell className="text-right font-mono font-semibold text-green-600 dark:text-green-500">
                           ${item.revenueCollected.toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-right font-mono text-chart-1">
+                        <TableCell className="text-right font-mono font-semibold text-orange-600 dark:text-orange-500">
                           ${item.pending.toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{item.serviceType}</Badge>
+                          <Badge variant="outline" className="font-medium">{item.serviceType}</Badge>
                         </TableCell>
-                        <TableCell>{item.location}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.location}</TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                        <DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                        <p>No revenue data available</p>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
