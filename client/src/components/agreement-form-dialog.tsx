@@ -120,8 +120,8 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
       const agreementData = {
         clientId: data.clientId,
         agreementName: data.agreementName,
-        startDate: data.startDate,
-        endDate: data.endDate,
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate.toISOString(),
         value: totalValue.toString(),
         currency: data.currency,
         status: "active",
