@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -6,15 +7,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, FileText, Filter, BarChart3, DollarSign } from "lucide-react";
+import { FileDown, FileText, Filter, DollarSign, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function Reports() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [reportType, setReportType] = useState("outstanding");
-  const [currency, setCurrency] = useState("all");
-  const [period, setPeriod] = useState("current_month");
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -30,12 +39,16 @@ export default function Reports() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  const { data: clients } = useQuery<any[]>({
+    queryKey: ["/api/clients"],
+  });
+
   const { data: outstandingReport } = useQuery<any>({
-    queryKey: ["/api/reports/outstanding", { currency, period }],
+    queryKey: ["/api/reports/outstanding", { clients: selectedClients, dateRange }],
   });
 
   const { data: revenueReport } = useQuery<any>({
-    queryKey: ["/api/reports/revenue", { currency, period }],
+    queryKey: ["/api/reports/revenue", { clients: selectedClients, dateRange }],
   });
 
   const handleExport = (format: "excel" | "pdf" | "csv") => {
@@ -43,6 +56,12 @@ export default function Reports() {
       title: "Exporting report",
       description: `Preparing ${format.toUpperCase()} export...`,
     });
+  };
+
+  const toggleClientSelection = (clientId: string) => {
+    setSelectedClients((prev) =>
+      prev.includes(clientId) ? prev.filter((id) => id !== clientId) : [...prev, clientId]
+    );
   };
 
   if (isLoading || !isAuthenticated) {
@@ -66,34 +85,76 @@ export default function Reports() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Period</label>
-              <Select value={period} onValueChange={setPeriod}>
-                <SelectTrigger data-testid="select-period">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="current_month">Current Month</SelectItem>
-                  <SelectItem value="last_month">Last Month</SelectItem>
-                  <SelectItem value="last_quarter">Last Quarter</SelectItem>
-                  <SelectItem value="last_year">Last Year</SelectItem>
-                  <SelectItem value="ytd">Year to Date</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium mb-2 block">Client (Multi-select)</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start" data-testid="select-clients">
+                    <Filter className="h-4 w-4 mr-2" />
+                    {selectedClients.length === 0
+                      ? "All Clients"
+                      : `${selectedClients.length} client(s) selected`}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <div className="font-medium text-sm mb-2">Select Clients</div>
+                    {clients?.map((client) => (
+                      <div key={client.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`client-${client.id}`}
+                          checked={selectedClients.includes(client.id)}
+                          onChange={() => toggleClientSelection(client.id)}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
+                          {client.name}
+                        </label>
+                      </div>
+                    ))}
+                    {clients?.length === 0 && (
+                      <div className="text-sm text-muted-foreground">No clients available</div>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Currency</label>
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger data-testid="select-currency">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Currencies</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="INR">INR</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium mb-2 block">Date Range</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !dateRange.from && "text-muted-foreground"
+                    )}
+                    data-testid="select-date-range"
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      "Pick a date range"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="range"
+                    selected={{ from: dateRange.from, to: dateRange.to }}
+                    onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="flex gap-2">
@@ -118,183 +179,114 @@ export default function Reports() {
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="outstanding" data-testid="tab-outstanding">
             <FileText className="h-4 w-4 mr-2" />
-            Outstanding
+            Outstanding Report
           </TabsTrigger>
           <TabsTrigger value="revenue" data-testid="tab-revenue">
             <DollarSign className="h-4 w-4 mr-2" />
-            Revenue
+            Revenue Report
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="outstanding" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Outstanding</CardDescription>
-                <CardTitle className="text-3xl font-bold font-mono">
-                  ${(outstandingReport?.total || 0).toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Across all currencies</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Overdue Amount</CardDescription>
-                <CardTitle className="text-3xl font-bold font-mono text-destructive">
-                  ${(outstandingReport?.overdue || 0).toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{outstandingReport?.overdueCount || 0} invoices</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Aging Analysis</CardDescription>
-                <CardTitle className="text-3xl font-bold font-mono">
-                  {outstandingReport?.avgAgingDays || 0} days
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Average outstanding period</p>
-              </CardContent>
-            </Card>
-          </div>
-
+        <TabsContent value="outstanding" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Outstanding Invoices</CardTitle>
-              <CardDescription>Pending payments by client</CardDescription>
+              <CardTitle>Outstanding Report</CardTitle>
+              <CardDescription>Pending payments by client with invoice details</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {outstandingReport?.invoices && outstandingReport.invoices.length > 0 ? (
-                  outstandingReport.invoices.map((invoice: any) => (
-                    <div
-                      key={invoice.id}
-                      className="flex items-center justify-between p-4 rounded-lg border hover-elevate"
-                      data-testid={`outstanding-invoice-${invoice.id}`}
-                    >
-                      <div className="flex-1">
-                        <p className="font-semibold">{invoice.clientName}</p>
-                        <p className="text-sm text-muted-foreground">Invoice #{invoice.invoiceNumber}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Due: {new Date(invoice.dueDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold font-mono">
-                          {invoice.currency} {invoice.amount}
-                        </p>
-                        <Badge variant={invoice.status === "overdue" ? "destructive" : "secondary"} className="mt-1">
-                          {invoice.agingDays} days
-                        </Badge>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>No outstanding invoices</p>
-                  </div>
-                )}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Invoice No</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-center">Overdue Days</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {outstandingReport?.invoices && outstandingReport.invoices.length > 0 ? (
+                    outstandingReport.invoices.map((invoice: any) => (
+                      <TableRow key={invoice.id} data-testid={`outstanding-invoice-${invoice.id}`}>
+                        <TableCell className="font-medium">{invoice.clientName}</TableCell>
+                        <TableCell>{invoice.invoiceNumber}</TableCell>
+                        <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right font-mono">
+                          {invoice.currency} {invoice.amount.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"}>
+                            {invoice.agingDays} days
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant={invoice.status === "overdue" ? "destructive" : "default"}>
+                            {invoice.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No outstanding invoices</p>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="revenue" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Revenue</CardDescription>
-                <CardTitle className="text-3xl font-bold font-mono text-chart-3">
-                  ${(revenueReport?.total || 0).toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">For selected period</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Growth Rate</CardDescription>
-                <CardTitle className="text-3xl font-bold font-mono text-chart-1">
-                  +{revenueReport?.growthRate || 0}%
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">vs previous period</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Avg Deal Size</CardDescription>
-                <CardTitle className="text-3xl font-bold font-mono">
-                  ${(revenueReport?.avgDealSize || 0).toLocaleString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Per client</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Revenue by Service Type</CardTitle>
-                <CardDescription>Breakdown by service category</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {revenueReport?.byServiceType && revenueReport.byServiceType.map((item: any) => (
-                    <div key={item.type} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="capitalize">{item.type.replace(/_/g, ' ')}</span>
-                        <span className="font-semibold font-mono">${item.revenue.toLocaleString()}</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className="bg-primary rounded-full h-2"
-                          style={{ width: `${item.percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Clients by Revenue</CardTitle>
-                <CardDescription>Highest revenue contributors</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {revenueReport?.topClients && revenueReport.topClients.map((client: any, index: number) => (
-                    <div key={client.id} className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-sm">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{client.name}</p>
-                        <p className="text-xs text-muted-foreground">{client.industry}</p>
-                      </div>
-                      <p className="font-bold font-mono">${client.revenue.toLocaleString()}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="revenue" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue Report</CardTitle>
+              <CardDescription>Revenue collected and pending by client</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead className="text-right">Revenue Collected</TableHead>
+                    <TableHead className="text-right">Pending</TableHead>
+                    <TableHead>Service Type</TableHead>
+                    <TableHead>Location</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {revenueReport?.data && revenueReport.data.length > 0 ? (
+                    revenueReport.data.map((item: any) => (
+                      <TableRow key={item.id} data-testid={`revenue-item-${item.id}`}>
+                        <TableCell className="font-medium">{item.clientName}</TableCell>
+                        <TableCell className="text-right font-mono text-chart-3">
+                          ${item.revenueCollected.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-chart-1">
+                          ${item.pending.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{item.serviceType}</Badge>
+                        </TableCell>
+                        <TableCell>{item.location}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                        <DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No revenue data available</p>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
