@@ -77,6 +77,8 @@ export const services = pgTable("services", {
   goLiveDate: timestamp("go_live_date"),
   billingCycle: varchar("billing_cycle", { length: 50 }),
   isRecurring: boolean("is_recurring").default(false),
+  assignedCsmId: varchar("assigned_csm_id").references(() => users.id),
+  documentPath: varchar("document_path"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

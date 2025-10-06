@@ -300,11 +300,14 @@ export function registerRoutes(app: Express) {
       
       const clients = await storage.getClients();
       
+      const users = await storage.getUsers();
       const servicesWithClients = services.map(service => {
         const client = clients.find(c => c.id === service.clientId);
+        const csm = service.assignedCsmId ? users.find(u => u.id === service.assignedCsmId) : null;
         return {
           ...service,
           clientName: client?.name || "Unknown",
+          csmName: csm ? `${csm.firstName} ${csm.lastName}` : null,
         };
       });
       
@@ -333,6 +336,33 @@ export function registerRoutes(app: Express) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/services/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const service = await storage.updateService(req.params.id, req.body);
+      if (!service) {
+        return res.status(404).json({ error: "Service not found" });
+      }
+      res.json(service);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/services/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const success = await storage.deleteService(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Service not found" });
+      }
+      res.json({ success: true, message: "Service deleted successfully" });
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, DollarSign, Calendar, Building2 } from "lucide-react";
+import { ServiceFormDialog } from "@/components/service-form-dialog";
+import { Plus, Search, DollarSign, Calendar, Building2, User, FileText } from "lucide-react";
 import type { Service } from "@shared/schema";
 
 export default function Services() {
@@ -16,6 +17,8 @@ export default function Services() {
   const [searchTerm, setSearchTerm] = useState("");
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>("all");
   const [currencyFilter, setCurrencyFilter] = useState<string>("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<any>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -50,7 +53,7 @@ export default function Services() {
           <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Services & Billing</h1>
           <p className="text-muted-foreground">Manage client services and billing records</p>
         </div>
-        <Button data-testid="button-add-service">
+        <Button onClick={() => setIsDialogOpen(true)} data-testid="button-add-service">
           <Plus className="h-4 w-4 mr-2" />
           Add Service
         </Button>
@@ -215,13 +218,19 @@ export default function Services() {
             <DollarSign className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No services found</h3>
             <p className="text-muted-foreground mb-4">Get started by adding your first service</p>
-            <Button data-testid="button-add-first-service">
+            <Button onClick={() => setIsDialogOpen(true)} data-testid="button-add-first-service">
               <Plus className="h-4 w-4 mr-2" />
               Add Service
             </Button>
           </CardContent>
         </Card>
       )}
+
+      <ServiceFormDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        service={selectedService}
+      />
     </div>
   );
 }
