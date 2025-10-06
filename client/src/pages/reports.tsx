@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/page-header";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Client, Invoice, Service } from "@shared/schema";
@@ -354,8 +354,8 @@ export default function Reports() {
       <div className="p-6 space-y-6">
 
       {/* Floating Filter Button */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerTrigger asChild>
+      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <SheetTrigger asChild>
           <Button 
             size="icon"
             className="fixed right-6 top-24 z-50 h-14 w-14 rounded-full shadow-lg"
@@ -363,28 +363,20 @@ export default function Reports() {
           >
             <Filter className="h-6 w-6" />
           </Button>
-        </DrawerTrigger>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <DrawerTitle className="text-xl flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-primary" />
-                  Filters & Export
-                </DrawerTitle>
-                <DrawerDescription className="mt-1">
-                  Filter data and export reports in your preferred format
-                </DrawerDescription>
-              </div>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon" data-testid="drawer-close-button">
-                  <X className="h-5 w-5" />
-                </Button>
-              </DrawerClose>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Filter className="h-5 w-5 text-primary" />
+                Filters & Export
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Filter data and export reports in your preferred format
+              </p>
             </div>
-          </DrawerHeader>
           
-          <div className="p-6 space-y-6 overflow-y-auto">
+            <div className="space-y-6">
             {/* Export Buttons */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Export Options</label>
@@ -523,8 +515,8 @@ export default function Reports() {
               </Button>
             </div>
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
 
       <Tabs defaultValue="outstanding" onValueChange={setReportType}>
         <TabsList className="grid w-full max-w-md grid-cols-2 h-11">
