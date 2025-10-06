@@ -8,8 +8,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-setupAuth(app).catch(console.error);
-
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -41,6 +39,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  await setupAuth(app);
   registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
