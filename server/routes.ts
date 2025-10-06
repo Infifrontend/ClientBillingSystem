@@ -4,6 +4,8 @@ import { isAuthenticated } from "./replitAuth";
 import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
+import { log } from "./utils";
+
 
 export function registerRoutes(app: Express) {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
@@ -58,27 +60,27 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/dashboard/stats", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const clients = await storage.getClients();
       const agreements = await storage.getAgreements({ status: "active" });
       const invoices = await storage.getInvoices();
-      
+
       const now = new Date();
       const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthlyInvoices = invoices.filter(inv => new Date(inv.issueDate) >= currentMonth);
-      
+
       const monthlyRevenue = monthlyInvoices
         .filter(inv => inv.status === "paid")
         .reduce((sum, inv) => sum + Number(inv.amount), 0);
-      
+
       const outstanding = invoices
         .filter(inv => inv.status === "pending" || inv.status === "overdue")
         .reduce((sum, inv) => sum + Number(inv.amount), 0);
-      
+
       const forecastedRevenue = monthlyRevenue * 1.15;
       const atRiskClients = Math.floor(clients.length * 0.08);
-      
+
       res.json({
         totalClients: clients.length,
         activeAgreements: agreements.length,
@@ -93,14 +95,14 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/dashboard/revenue-trends", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
       const data = months.map((month, index) => ({
         month,
         revenue: 50000 + (index * 8000) + (Math.random() * 10000),
       }));
-      
+
       res.json(data);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -108,7 +110,7 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/dashboard/client-distribution", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const clients = await storage.getClients();
       const distribution = clients.reduce((acc: any, client) => {
@@ -116,12 +118,12 @@ export function registerRoutes(app: Express) {
         acc[industry] = (acc[industry] || 0) + 1;
         return acc;
       }, {});
-      
+
       const data = Object.entries(distribution).map(([name, value]) => ({
         name,
         value,
       }));
-      
+
       res.json(data);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -129,14 +131,14 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/dashboard/upcoming-renewals", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const agreements = await storage.getAgreements();
       const clients = await storage.getClients();
-      
+
       const now = new Date();
       const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-      
+
       const upcomingRenewals = agreements
         .filter(agreement => {
           const endDate = new Date(agreement.endDate);
@@ -147,7 +149,7 @@ export function registerRoutes(app: Express) {
           const daysLeft = Math.floor(
             (new Date(agreement.endDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
           );
-          
+
           return {
             id: agreement.id,
             clientName: client?.name || "Unknown",
@@ -157,7 +159,7 @@ export function registerRoutes(app: Express) {
           };
         })
         .sort((a, b) => a.daysLeft - b.daysLeft);
-      
+
       res.json(upcomingRenewals);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -169,23 +171,23 @@ export function registerRoutes(app: Express) {
       const { search, status, industry } = req.query;
       const userId = req.user?.claims.sub;
       const userRole = req.user?.role;
-      
+
       console.log('[DEBUG] Fetching clients for user:', userId, 'with role:', userRole);
-      
+
       let clients = await storage.getClients({
         search: search as string,
         status: status as string,
         industry: industry as string,
       });
-      
+
       console.log('[DEBUG] Total clients fetched from DB:', clients.length);
-      
+
       // Temporarily disabled CSM filtering for testing
       // if (userRole === "csm") {
       //   clients = clients.filter(client => client.assignedCsmId === userId);
       //   console.log('[DEBUG] Filtered clients for CSM:', clients.length);
       // }
-      
+
       console.log('[DEBUG] Returning clients:', clients.length);
       res.json(clients);
     } catch (error: any) {
@@ -200,19 +202,19 @@ export function registerRoutes(app: Express) {
       if (!client) {
         return res.status(404).json({ error: "Client not found" });
       }
-      
+
       const userRole = req.user?.role;
       const userId = req.user?.claims.sub;
-      
+
       console.log('[DEBUG] Fetching client:', req.params.id, 'for user:', userId, 'with role:', userRole);
       console.log('[DEBUG] Client assignedCsmId:', client.assignedCsmId);
-      
+
       // Temporarily disabled CSM filtering for testing
       // if (userRole === "csm" && client.assignedCsmId !== userId) {
       //   console.log('[DEBUG] Access denied - CSM not assigned to this client');
       //   return res.status(403).json({ error: "Access denied" });
       // }
-      
+
       res.json(client);
     } catch (error: any) {
       console.error('[ERROR] Failed to fetch client:', error);
@@ -239,20 +241,20 @@ export function registerRoutes(app: Express) {
   app.patch("/api/clients/:id", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
       console.log('[DEBUG] Updating client:', req.params.id, 'with data:', req.body);
-      
+
       // Check if client exists first
       const existingClient = await storage.getClient(req.params.id);
       if (!existingClient) {
         console.log('[DEBUG] Client not found for update:', req.params.id);
         return res.status(404).json({ error: "Client not found" });
       }
-      
+
       const client = await storage.updateClient(req.params.id, req.body);
       if (!client) {
         console.log('[DEBUG] Failed to update client:', req.params.id);
         return res.status(500).json({ error: "Failed to update client" });
       }
-      
+
       console.log('[DEBUG] Client updated successfully:', client.id);
       res.json(client);
     } catch (error: any) {
@@ -272,13 +274,13 @@ export function registerRoutes(app: Express) {
         console.log('[DEBUG] Client not found:', req.params.id);
         return res.status(404).json({ error: "Client not found" });
       }
-      
+
       const success = await storage.deleteClient(req.params.id);
       if (!success) {
         console.log('[DEBUG] Failed to delete client:', req.params.id);
         return res.status(500).json({ error: "Failed to delete client" });
       }
-      
+
       console.log('[DEBUG] Client deleted successfully:', req.params.id);
       res.json({ success: true, message: "Client deleted successfully" });
     } catch (error: any) {
@@ -288,7 +290,7 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/services", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const { search, clientId, serviceType, currency } = req.query;
       const services = await storage.getServices({
@@ -297,9 +299,9 @@ export function registerRoutes(app: Express) {
         serviceType: serviceType as string,
         currency: currency as string,
       });
-      
+
       const clients = await storage.getClients();
-      
+
       const users = await storage.getUsers();
       const servicesWithClients = services.map(service => {
         const client = clients.find(c => c.id === service.clientId);
@@ -310,7 +312,7 @@ export function registerRoutes(app: Express) {
           csmName: csm ? `${csm.firstName} ${csm.lastName}` : null,
         };
       });
-      
+
       const stats = {
         total: services.length,
         recurring: services.filter(s => s.isRecurring).length,
@@ -319,7 +321,7 @@ export function registerRoutes(app: Express) {
           .reduce((sum, s) => sum + Number(s.amount), 0),
         annualRevenue: services.reduce((sum, s) => sum + Number(s.amount), 0),
       };
-      
+
       res.json({ data: servicesWithClients, stats });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -327,7 +329,7 @@ export function registerRoutes(app: Express) {
   });
 
   app.post("/api/services", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       // Convert date strings to Date objects
       const serviceData = {
@@ -335,7 +337,7 @@ export function registerRoutes(app: Express) {
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
         goLiveDate: req.body.goLiveDate ? new Date(req.body.goLiveDate) : undefined,
       };
-      
+
       const validatedData = insertServiceSchema.parse(serviceData);
       const service = await storage.createService(validatedData);
       res.json(service);
@@ -355,34 +357,35 @@ export function registerRoutes(app: Express) {
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
         goLiveDate: req.body.goLiveDate ? new Date(req.body.goLiveDate) : undefined,
       };
-      
+
       const service = await storage.updateService(req.params.id, serviceData);
       if (!service) {
         return res.status(404).json({ error: "Service not found" });
       }
       res.json(service);
     } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
-      }
-      res.status(500).json({ error: error.message });
+      log(`Error updating service: ${error.message}`);
+      res.status(400).json({
+        error: error.errors?.[0]?.message || error.message || "Invalid service data"
+      });
     }
   });
 
   app.delete("/api/services/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const success = await storage.deleteService(req.params.id);
-      if (!success) {
+      const deleted = await storage.deleteService(req.params.id);
+      if (!deleted) {
         return res.status(404).json({ error: "Service not found" });
       }
-      res.json({ success: true, message: "Service deleted successfully" });
+      res.json({ message: "Service deleted successfully" });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      log(`Error deleting service: ${error.message}`);
+      res.status(500).json({ error: "Failed to delete service" });
     }
   });
 
   app.get("/api/agreements", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const { search, clientId, status } = req.query;
       const agreements = await storage.getAgreements({
@@ -390,9 +393,9 @@ export function registerRoutes(app: Express) {
         clientId: clientId as string,
         status: status as string,
       });
-      
+
       const clients = await storage.getClients();
-      
+
       const agreementsWithClients = agreements.map(agreement => {
         const client = clients.find(c => c.id === agreement.clientId);
         return {
@@ -400,10 +403,10 @@ export function registerRoutes(app: Express) {
           clientName: client?.name || "Unknown",
         };
       });
-      
+
       const now = new Date();
       const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-      
+
       const stats = {
         total: agreements.length,
         expiringSoon: agreements.filter(a => {
@@ -412,7 +415,7 @@ export function registerRoutes(app: Express) {
         }).length,
         totalValue: agreements.reduce((sum, a) => sum + Number(a.value || 0), 0),
       };
-      
+
       res.json({ data: agreementsWithClients, stats });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -420,7 +423,7 @@ export function registerRoutes(app: Express) {
   });
 
   app.post("/api/agreements", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       // Convert date strings to Date objects
       const agreementData = {
@@ -428,13 +431,13 @@ export function registerRoutes(app: Express) {
         startDate: new Date(req.body.startDate),
         endDate: new Date(req.body.endDate),
       };
-      
+
       const validatedData = insertAgreementSchema.parse(agreementData);
       const agreement = await storage.createAgreement(validatedData);
-      
+
       // Create notifications for CSM and Finance about new agreement
       const client = await storage.getClient(agreement.clientId);
-      
+
       // Notify CSM (if assigned)
       if (client?.assignedCsmId) {
         await storage.createNotification({
@@ -446,11 +449,11 @@ export function registerRoutes(app: Express) {
           relatedEntityId: agreement.id,
         });
       }
-      
+
       // Notify Finance users
       const users = await storage.getUsers();
       const financeUsers = users.filter(u => u.role === "finance" || u.role === "admin");
-      
+
       for (const financeUser of financeUsers) {
         await storage.createNotification({
           userId: financeUser.id,
@@ -461,7 +464,7 @@ export function registerRoutes(app: Express) {
           relatedEntityId: agreement.id,
         });
       }
-      
+
       res.json(agreement);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -503,13 +506,13 @@ export function registerRoutes(app: Express) {
         console.log('[DEBUG] Agreement not found:', req.params.id);
         return res.status(404).json({ error: "Agreement not found" });
       }
-      
+
       const success = await storage.deleteAgreement(req.params.id);
       if (!success) {
         console.log('[DEBUG] Failed to delete agreement:', req.params.id);
         return res.status(500).json({ error: "Failed to delete agreement" });
       }
-      
+
       console.log('[DEBUG] Agreement deleted successfully:', req.params.id);
       res.json({ success: true, message: "Agreement deleted successfully" });
     } catch (error: any) {
@@ -519,7 +522,7 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/reports/outstanding", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const { currency, period } = req.query;
       const invoices = await storage.getInvoices({
@@ -527,24 +530,24 @@ export function registerRoutes(app: Express) {
         currency: currency as string,
         period: period as string,
       });
-      
+
       const overdueInvoices = await storage.getInvoices({ status: "overdue" });
       const clients = await storage.getClients();
-      
+
       const now = new Date();
       const invoicesWithDetails = [...invoices, ...overdueInvoices].map(invoice => {
         const client = clients.find(c => c.id === invoice.clientId);
         const agingDays = Math.floor(
           (now.getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24)
         );
-        
+
         return {
           ...invoice,
           clientName: client?.name || "Unknown",
           agingDays,
         };
       });
-      
+
       const stats = {
         total: invoicesWithDetails.reduce((sum, inv) => sum + Number(inv.amount), 0),
         overdue: overdueInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0),
@@ -553,7 +556,7 @@ export function registerRoutes(app: Express) {
           invoicesWithDetails.reduce((sum, inv) => sum + inv.agingDays, 0) / invoicesWithDetails.length || 0
         ),
       };
-      
+
       res.json({ invoices: invoicesWithDetails, ...stats });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -561,7 +564,7 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/reports/revenue", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const { currency, period } = req.query;
       const invoices = await storage.getInvoices({
@@ -569,12 +572,12 @@ export function registerRoutes(app: Express) {
         currency: currency as string,
         period: period as string,
       });
-      
+
       const services = await storage.getServices();
       const clients = await storage.getClients();
-      
+
       const totalRevenue = invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
-      
+
       const byServiceType = services.reduce((acc: any, service) => {
         const type = service.serviceType;
         if (!acc[type]) {
@@ -584,12 +587,12 @@ export function registerRoutes(app: Express) {
         acc[type].count += 1;
         return acc;
       }, {});
-      
+
       const byServiceTypeArray = Object.values(byServiceType).map((item: any) => ({
         ...item,
         percentage: totalRevenue > 0 ? (item.revenue / totalRevenue) * 100 : 0,
       }));
-      
+
       const clientRevenue = clients.map(client => {
         const clientInvoices = invoices.filter(inv => inv.clientId === client.id);
         const revenue = clientInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
@@ -600,7 +603,7 @@ export function registerRoutes(app: Express) {
           revenue,
         };
       }).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
-      
+
       res.json({
         total: Math.round(totalRevenue),
         growthRate: 12,
@@ -614,21 +617,21 @@ export function registerRoutes(app: Express) {
   });
 
   app.get("/api/insights", isAuthenticated, async (req: Request, res: Response) => {
-    
+
     try {
       const clients = await storage.getClients();
       const services = await storage.getServices();
       const invoices = await storage.getInvoices();
-      
+
       const paidInvoices = invoices.filter(inv => inv.status === "paid");
       const totalRevenue = paidInvoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
       const avgRevenue = totalRevenue / Math.max(paidInvoices.length, 1);
-      
+
       const clientHealthScores = clients.slice(0, 5).map((client, index) => {
         const clientInvoices = invoices.filter(inv => inv.clientId === client.id);
         const overdueCount = clientInvoices.filter(inv => inv.status === "overdue").length;
         const score = Math.max(50, Math.min(100, 90 - (overdueCount * 10) - (index * 2)));
-        
+
         return {
           id: client.id,
           name: client.name,
@@ -641,11 +644,11 @@ export function registerRoutes(app: Express) {
             : "Requires immediate attention",
         };
       });
-      
+
       const profitabilityAnalysis = clients.slice(0, 5).map((client, index) => {
         const clientServices = services.filter(s => s.clientId === client.id);
         const revenue = clientServices.reduce((sum, s) => sum + Number(s.amount), 0);
-        
+
         return {
           id: client.id,
           name: client.name,
@@ -653,7 +656,7 @@ export function registerRoutes(app: Express) {
           marginPercent: 25 + (index * 3),
         };
       }).sort((a, b) => b.marginPercent - a.marginPercent);
-      
+
       const recommendations = [
         {
           priority: "high",
@@ -674,7 +677,7 @@ export function registerRoutes(app: Express) {
           potentialImpact: 85000,
         },
       ];
-      
+
       res.json({
         revenueForecast: {
           amount: Math.round(avgRevenue * 1.15),
@@ -698,7 +701,7 @@ export function registerRoutes(app: Express) {
     try {
       const userId = req.user?.claims.sub;
       const { unreadOnly } = req.query;
-      
+
       const notifications = await storage.getNotifications(userId, unreadOnly === "true");
       res.json(notifications);
     } catch (error: any) {
@@ -734,21 +737,21 @@ export function registerRoutes(app: Express) {
       const invoices = await storage.getInvoices({ status: "overdue" });
       const agreements = await storage.getAgreements();
       const clients = await storage.getClients();
-      
+
       const urgentCases = [];
-      
+
       // Overdue invoices at 15, 30, 45 days
       for (const invoice of invoices) {
         const daysOverdue = Math.floor(
           (now.getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24)
         );
-        
+
         if (daysOverdue >= 15) {
           const client = clients.find(c => c.id === invoice.clientId);
           let severity = "medium";
           if (daysOverdue >= 45) severity = "critical";
           else if (daysOverdue >= 30) severity = "high";
-          
+
           urgentCases.push({
             id: `invoice-${invoice.id}`,
             type: "overdue_payment",
@@ -764,19 +767,19 @@ export function registerRoutes(app: Express) {
           });
         }
       }
-      
+
       // Agreement renewals at 2 months, 1 month, 2 weeks
       for (const agreement of agreements) {
         const daysUntilExpiry = Math.floor(
           (new Date(agreement.endDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
         );
-        
+
         if (daysUntilExpiry <= 60 && daysUntilExpiry > 0) {
           const client = clients.find(c => c.id === agreement.clientId);
           let severity = "low";
           if (daysUntilExpiry <= 14) severity = "high";
           else if (daysUntilExpiry <= 30) severity = "medium";
-          
+
           urgentCases.push({
             id: `agreement-${agreement.id}`,
             type: "agreement_renewal",
@@ -791,12 +794,12 @@ export function registerRoutes(app: Express) {
           });
         }
       }
-      
+
       urgentCases.sort((a, b) => {
         const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
         return severityOrder[a.severity] - severityOrder[b.severity];
       });
-      
+
       res.json(urgentCases);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
