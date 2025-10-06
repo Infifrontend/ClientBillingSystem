@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { PageHeader } from "@/components/page-header";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Client, Invoice, Service } from "@shared/schema";
@@ -343,17 +344,17 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Reports</h1>
-          <p className="text-muted-foreground">Financial analytics and outstanding invoices</p>
-        </div>
-      </div>
+    <div className="space-y-0">
+      <PageHeader 
+        title="Reports" 
+        subtitle="Financial analytics and outstanding invoices"
+      />
+      <div className="p-6 space-y-6">
 
       <Card className="border-2 shadow-sm">
-        <CardHeader className="pb-5">
-          <div className="flex items-center justify-between">
+        <CardContent className="pt-6 space-y-5">
+          {/* First Row: Title/Subtitle on left, Export buttons on right */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Filter className="h-5 w-5 text-primary" />
@@ -361,10 +362,25 @@ export default function Reports() {
               </CardTitle>
               <CardDescription className="mt-1">Filter data and export reports in your preferred format</CardDescription>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground mr-1">Export:</span>
+              <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2 hover:bg-green-50 hover:text-green-700 hover:border-green-200 dark:hover:bg-green-950 dark:hover:text-green-400">
+                <FileDown className="h-4 w-4" />
+                Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400">
+                <FileDown className="h-4 w-4" />
+                PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:text-blue-400">
+                <FileDown className="h-4 w-4" />
+                CSV
+              </Button>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          {/* Second Row: Client multi-select, Date Range, Clear Filters button */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Client (Multi-select)</label>
               <Popover>
@@ -469,32 +485,16 @@ export default function Reports() {
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-3 border-t">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={clearFilters}
-              className="gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
-            >
-              <X className="h-4 w-4" />
-              Clear Filters
-            </Button>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground mr-1">Export:</span>
-              <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2 hover:bg-green-50 hover:text-green-700 hover:border-green-200 dark:hover:bg-green-950 dark:hover:text-green-400">
-                <FileDown className="h-4 w-4" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400">
-                <FileDown className="h-4 w-4" />
-                PDF
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:text-blue-400">
-                <FileDown className="h-4 w-4" />
-                CSV
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground invisible">Actions</label>
+              <Button 
+                variant="outline" 
+                className="w-full h-11 gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
+                onClick={clearFilters}
+              >
+                <X className="h-4 w-4" />
+                Clear Filters
               </Button>
             </div>
           </div>
@@ -620,6 +620,7 @@ export default function Reports() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
