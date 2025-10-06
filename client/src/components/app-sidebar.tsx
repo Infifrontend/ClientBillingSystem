@@ -114,64 +114,15 @@ export function AppSidebar() {
                         }
                         data-testid={item.testId}
                       >
-                        <Link href={item.url}>
-                          <item.icon className="h-4 w-4" />
-                          <span className="text-lg">{item.title}</span> {/* Increased font size */}
+                        <Link href={item.url} className="cls-fnt-14">
+                          <item.icon className="h-6 w-4" />
+                          <span className="text-md">{item.title}</span>{" "}
+                          {/* Increased font size */}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
                 })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-white/50 text-xs uppercase tracking-wider">
-            System
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  data-testid="sidebar-notifications"
-                  className="text-white/80 hover:bg-white/5 hover:text-white"
-                >
-                  <Link href="/notifications">
-                    <Bell className="h-4 w-4" />
-                    <span>Notifications</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              {!isLoading && user?.role === "admin" && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    data-testid="sidebar-users"
-                    className="text-white/80 hover:bg-white/5 hover:text-white"
-                  >
-                    <Link href="/users">
-                      <Users className="h-4 w-4" />
-                      <span>Users & Roles</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-              {(user?.role === "admin" || user?.role === "manager") && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    data-testid="sidebar-settings"
-                    className="text-white/80 hover:bg-white/5 hover:text-white"
-                  >
-                    <Link href="/settings">
-                      <Settings className="h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
