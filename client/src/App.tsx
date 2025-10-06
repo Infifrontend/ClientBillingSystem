@@ -22,7 +22,7 @@ import Login from "@/pages/login";
 
 function AuthenticatedRoutes() {
   const style = {
-    "--sidebar-width": "20rem",
+    "--sidebar-width": "16.25rem",
     "--sidebar-width-icon": "4rem",
   };
 
