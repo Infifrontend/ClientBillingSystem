@@ -14,109 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { Client } from "@shared/schema";
-
-// Static data for Outstanding Report
-const staticOutstandingData = {
-  invoices: [
-    {
-      id: "1",
-      clientName: "Acme Corporation",
-      invoiceNumber: "INV-2024-001",
-      dueDate: "2024-01-15",
-      amount: 25000,
-      currency: "USD",
-      agingDays: 45,
-      status: "overdue"
-    },
-    {
-      id: "2",
-      clientName: "TechStart Inc",
-      invoiceNumber: "INV-2024-002",
-      dueDate: "2024-02-20",
-      amount: 18500,
-      currency: "USD",
-      agingDays: 10,
-      status: "pending"
-    },
-    {
-      id: "3",
-      clientName: "Global Enterprises",
-      invoiceNumber: "INV-2024-003",
-      dueDate: "2024-01-30",
-      amount: 42000,
-      currency: "USD",
-      agingDays: 32,
-      status: "overdue"
-    },
-    {
-      id: "4",
-      clientName: "Innovation Labs",
-      invoiceNumber: "INV-2024-004",
-      dueDate: "2024-02-28",
-      amount: 15000,
-      currency: "USD",
-      agingDays: 5,
-      status: "pending"
-    },
-    {
-      id: "5",
-      clientName: "Digital Solutions",
-      invoiceNumber: "INV-2024-005",
-      dueDate: "2024-01-10",
-      amount: 33000,
-      currency: "USD",
-      agingDays: 52,
-      status: "overdue"
-    }
-  ]
-};
-
-// Static data for Revenue Report
-const staticRevenueData = {
-  data: [
-    {
-      id: "1",
-      clientName: "Acme Corporation",
-      revenueCollected: 150000,
-      pending: 25000,
-      serviceType: "Consulting",
-      location: "New York, NY"
-    },
-    {
-      id: "2",
-      clientName: "TechStart Inc",
-      revenueCollected: 85000,
-      pending: 18500,
-      serviceType: "Development",
-      location: "San Francisco, CA"
-    },
-    {
-      id: "3",
-      clientName: "Global Enterprises",
-      revenueCollected: 220000,
-      pending: 42000,
-      serviceType: "Support",
-      location: "London, UK"
-    },
-    {
-      id: "4",
-      clientName: "Innovation Labs",
-      revenueCollected: 95000,
-      pending: 15000,
-      serviceType: "Training",
-      location: "Austin, TX"
-    },
-    {
-      id: "5",
-      clientName: "Digital Solutions",
-      revenueCollected: 180000,
-      pending: 33000,
-      serviceType: "Consulting",
-      location: "Seattle, WA"
-    }
-  ]
-};
+import type { Client, Invoice, Service } from "@shared/schema";
 
 export default function Reports() {
   const { toast } = useToast();
@@ -139,6 +37,33 @@ export default function Reports() {
       return response.json();
     },
   });
+
+  // Fetch invoices dynamically
+  const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
+    queryKey: ["/api/invoices"],
+    queryFn: async () => {
+      const response = await fetch("/api/invoices");
+      if (!response.ok) {
+        throw new Error("Failed to fetch invoices");
+      }
+      return response.json();
+    },
+  });
+
+  // Fetch services dynamically
+  const { data: servicesData, isLoading: servicesLoading } = useQuery({
+    queryKey: ["/api/services"],
+    queryFn: async () => {
+      const response = await fetch("/api/services");
+      if (!response.ok) {
+        throw new Error("Failed to fetch services");
+      }
+      return response.json();
+    },
+  });
+
+  const invoices = invoicesData?.data || [];
+  const services = servicesData?.data || [];
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -213,44 +138,83 @@ export default function Reports() {
     setDateRange({ from: undefined, to: undefined });
   };
 
+  // Calculate aging days for invoices
+  const calculateAgingDays = (dueDate: Date) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = today.getTime() - due.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
   // Filter outstanding invoices based on selected clients and date range
-  const filteredOutstandingData = staticOutstandingData.invoices.filter((invoice) => {
-    // Filter by client
-    if (selectedClients.length > 0) {
-      const client = clients.find(c => c.name === invoice.clientName);
-      if (!client || !selectedClients.includes(client.id)) {
+  const filteredOutstandingData = invoices
+    .map((invoice: Invoice) => {
+      const client = clients.find(c => c.id === invoice.clientId);
+      const agingDays = calculateAgingDays(invoice.dueDate);
+      return {
+        ...invoice,
+        clientName: client?.name || "Unknown Client",
+        agingDays,
+      };
+    })
+    .filter((invoice) => {
+      // Filter by client
+      if (selectedClients.length > 0 && !selectedClients.includes(invoice.clientId)) {
         return false;
       }
-    }
 
-    // Filter by date range
-    if (dateRange.from || dateRange.to) {
-      const invoiceDate = new Date(invoice.dueDate);
-      if (dateRange.from && invoiceDate < dateRange.from) {
-        return false;
+      // Filter by date range
+      if (dateRange.from || dateRange.to) {
+        const invoiceDate = new Date(invoice.dueDate);
+        if (dateRange.from && invoiceDate < dateRange.from) {
+          return false;
+        }
+        if (dateRange.to && invoiceDate > dateRange.to) {
+          return false;
+        }
       }
-      if (dateRange.to && invoiceDate > dateRange.to) {
-        return false;
-      }
-    }
 
-    return true;
-  });
+      return true;
+    });
 
   // Filter revenue data based on selected clients
-  const filteredRevenueData = staticRevenueData.data.filter((item) => {
-    // Filter by client
-    if (selectedClients.length > 0) {
-      const client = clients.find(c => c.name === item.clientName);
-      if (!client || !selectedClients.includes(client.id)) {
+  const filteredRevenueData = clients
+    .filter((client) => {
+      // Filter by selected clients
+      if (selectedClients.length > 0 && !selectedClients.includes(client.id)) {
         return false;
       }
-    }
+      return true;
+    })
+    .map((client) => {
+      const clientServices = services.filter((s: Service) => s.clientId === client.id);
+      const clientInvoices = invoices.filter((inv: Invoice) => inv.clientId === client.id);
+      
+      const revenueCollected = clientInvoices
+        .filter((inv: Invoice) => inv.status === "paid")
+        .reduce((sum, inv: Invoice) => sum + Number(inv.amount), 0);
+      
+      const pending = clientInvoices
+        .filter((inv: Invoice) => inv.status !== "paid" && inv.status !== "cancelled")
+        .reduce((sum, inv: Invoice) => sum + Number(inv.amount), 0);
+      
+      const serviceType = clientServices.length > 0 
+        ? clientServices[0].serviceType 
+        : "N/A";
 
-    return true;
-  });
+      return {
+        id: client.id,
+        clientName: client.name,
+        revenueCollected,
+        pending,
+        serviceType,
+        location: client.region || "N/A",
+      };
+    })
+    .filter((item) => item.revenueCollected > 0 || item.pending > 0);
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading || !isAuthenticated || invoicesLoading || servicesLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -456,13 +420,14 @@ export default function Reports() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredOutstandingData.map((invoice) => (
+                      filteredOutstandingData.map((invoice: any) => (
                         <TableRow key={invoice.id} data-testid={`outstanding-invoice-${invoice.id}`} className="hover:bg-muted/30">
                           <TableCell className="font-medium">{invoice.clientName}</TableCell>
                           <TableCell className="font-mono text-sm">{invoice.invoiceNumber}</TableCell>
                           <TableCell>{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
                           <TableCell className="text-right font-mono font-semibold">
-                            ₹{invoice.amount.toLocaleString()}
+                            {invoice.currency === "INR" ? "₹" : invoice.currency === "USD" ? "$" : "€"}
+                            {Number(invoice.amount).toLocaleString()}
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"} className="font-semibold">
@@ -510,7 +475,7 @@ export default function Reports() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredRevenueData.map((item) => (
+                      filteredRevenueData.map((item: any) => (
                         <TableRow key={item.id} data-testid={`revenue-item-${item.id}`} className="hover:bg-muted/30">
                           <TableCell className="font-medium">{item.clientName}</TableCell>
                           <TableCell className="text-right font-mono font-semibold text-green-600 dark:text-green-500">
@@ -520,7 +485,9 @@ export default function Reports() {
                             ₹{item.pending.toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="font-medium">{item.serviceType}</Badge>
+                            <Badge variant="outline" className="font-medium capitalize">
+                              {item.serviceType.replace(/_/g, ' ')}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">{item.location}</TableCell>
                         </TableRow>
