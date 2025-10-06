@@ -262,27 +262,34 @@ export default function Reports() {
         </div>
       </div>
 
-      <Card className="border-2">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Filters & Export</CardTitle>
-          <CardDescription>Filter data and export reports in your preferred format</CardDescription>
+      <Card className="border-2 shadow-sm">
+        <CardHeader className="pb-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Filter className="h-5 w-5 text-primary" />
+                Filters & Export
+              </CardTitle>
+              <CardDescription className="mt-1">Filter data and export reports in your preferred format</CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Client (Multi-select)</label>
+              <label className="text-sm font-semibold text-foreground">Client (Multi-select)</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between h-11" data-testid="select-clients">
-                    <span className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
+                  <Button variant="outline" className="w-full justify-between h-11 hover:bg-accent/50" data-testid="select-clients">
+                    <span className="flex items-center gap-2 text-sm">
+                      <Filter className="h-4 w-4 text-muted-foreground" />
                       {selectedClients.length === 0
                         ? "All Clients"
                         : `${selectedClients.length} client(s) selected`}
                     </span>
                     {selectedClients.length > 0 && (
                       <X 
-                        className="h-4 w-4 hover:bg-accent rounded-sm" 
+                        className="h-4 w-4 hover:bg-destructive/10 hover:text-destructive rounded-sm transition-colors p-0.5" 
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedClients([]);
@@ -291,18 +298,18 @@ export default function Reports() {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-4" align="start">
-                  <div className="space-y-3">
+                <PopoverContent className="w-80 p-0" align="start">
+                  <div className="p-4 space-y-3">
                     <div className="font-semibold text-sm border-b pb-2">Select Clients</div>
-                    <div className="max-h-60 overflow-y-auto space-y-2">
+                    <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
                       {staticClients.map((client) => (
-                        <div key={client.id} className="flex items-center space-x-3 p-2 hover:bg-accent rounded-md transition-colors">
+                        <div key={client.id} className="flex items-center space-x-3 p-2.5 hover:bg-accent rounded-md transition-colors cursor-pointer">
                           <input
                             type="checkbox"
                             id={`client-${client.id}`}
                             checked={selectedClients.includes(client.id)}
                             onChange={() => toggleClientSelection(client.id)}
-                            className="h-4 w-4 rounded border-input cursor-pointer"
+                            className="h-4 w-4 rounded border-input cursor-pointer accent-primary"
                           />
                           <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
                             {client.name}
@@ -316,19 +323,19 @@ export default function Reports() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date Range</label>
+              <label className="text-sm font-semibold text-foreground">Date Range</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-between h-11 font-normal",
+                      "w-full justify-between h-11 font-normal hover:bg-accent/50",
                       !dateRange.from && "text-muted-foreground"
                     )}
                     data-testid="select-date-range"
                   >
-                    <span className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
+                    <span className="flex items-center gap-2 text-sm">
+                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                       {dateRange.from ? (
                         dateRange.to ? (
                           <>
@@ -343,7 +350,7 @@ export default function Reports() {
                     </span>
                     {dateRange.from && (
                       <X 
-                        className="h-4 w-4 hover:bg-accent rounded-sm" 
+                        className="h-4 w-4 hover:bg-destructive/10 hover:text-destructive rounded-sm transition-colors p-0.5" 
                         onClick={(e) => {
                           e.stopPropagation();
                           setDateRange({ from: undefined, to: undefined });
@@ -358,36 +365,39 @@ export default function Reports() {
                     selected={{ from: dateRange.from, to: dateRange.to }}
                     onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
                     numberOfMonths={2}
-                    className="rounded-md"
+                    className="rounded-md border-0"
                   />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 pt-2 border-t">
+          <div className="flex flex-wrap items-center gap-3 pt-3 border-t">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={clearFilters}
-              className="gap-2"
+              className="gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
             >
               <X className="h-4 w-4" />
               Clear Filters
             </Button>
             <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2">
-              <FileDown className="h-4 w-4" />
-              Excel
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2">
-              <FileDown className="h-4 w-4" />
-              PDF
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2">
-              <FileDown className="h-4 w-4" />
-              CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground mr-1">Export:</span>
+              <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2 hover:bg-green-50 hover:text-green-700 hover:border-green-200 dark:hover:bg-green-950 dark:hover:text-green-400">
+                <FileDown className="h-4 w-4" />
+                Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400">
+                <FileDown className="h-4 w-4" />
+                PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:text-blue-400">
+                <FileDown className="h-4 w-4" />
+                CSV
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
