@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Search, FileText, Calendar, DollarSign, AlertCircle, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { AgreementFormDialog } from "@/components/agreement-form-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -24,6 +25,9 @@ export default function Agreements() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [previewAgreement, setPreviewAgreement] = useState<any | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [agreementToDelete, setAgreementToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [editingAgreement, setEditingAgreement] = useState<any | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -81,9 +85,21 @@ export default function Agreements() {
   });
 
   const handleDelete = (agreementId: string, agreementName: string) => {
-    if (window.confirm(`Are you sure you want to delete ${agreementName}? This action cannot be undone.`)) {
-      deleteMutation.mutate(agreementId);
+    setAgreementToDelete({ id: agreementId, name: agreementName });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (agreementToDelete) {
+      deleteMutation.mutate(agreementToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setAgreementToDelete(null);
     }
+  };
+
+  const handleEdit = (agreement: any) => {
+    setEditingAgreement(agreement);
+    setIsDialogOpen(true);
   };
 
   const handlePreview = (agreement: any) => {
@@ -279,9 +295,9 @@ export default function Agreements() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add New Agreement
+                            <DropdownMenuItem onClick={() => handleEdit(agreement)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Agreement
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handlePreview(agreement)}>
                               <Eye className="h-4 w-4 mr-2" />
@@ -318,7 +334,31 @@ export default function Agreements() {
         </Card>
       )}
 
-      <AgreementFormDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+      <AgreementFormDialog 
+        open={isDialogOpen} 
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setEditingAgreement(null);
+        }}
+        agreement={editingAgreement}
+      />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{agreementToDelete?.name}</strong>. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setAgreementToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

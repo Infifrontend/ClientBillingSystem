@@ -471,6 +471,30 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.put("/api/agreements/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const agreement = await storage.getAgreement(req.params.id);
+      if (!agreement) {
+        return res.status(404).json({ error: "Agreement not found" });
+      }
+
+      // Convert date strings to Date objects
+      const agreementData = {
+        ...req.body,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+      };
+
+      const validatedData = insertAgreementSchema.parse(agreementData);
+      const updatedAgreement = await storage.updateAgreement(req.params.id, validatedData);
+
+      res.json(updatedAgreement);
+    } catch (error: any) {
+      console.error('[ERROR] Update agreement error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.delete("/api/agreements/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       console.log('[DEBUG] Deleting agreement:', req.params.id);

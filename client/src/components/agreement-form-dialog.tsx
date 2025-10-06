@@ -50,12 +50,14 @@ interface AgreementFormData {
 interface AgreementFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  agreement?: any | null;
 }
 
-export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogProps) {
+export function AgreementFormDialog({ open, onOpenChange, agreement }: AgreementFormDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditing = !!agreement;
 
   const { data: clients } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
@@ -74,10 +76,43 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
     },
   });
 
+  // Update form when agreement changes
+  useState(() => {
+    if (agreement) {
+      const totalValue = parseFloat(agreement.value || "0");
+      form.reset({
+        clientId: agreement.clientId,
+        agreementName: agreement.agreementName,
+        startDate: new Date(agreement.startDate),
+        endDate: new Date(agreement.endDate),
+        paymentTerms: "Net 30",
+        year1Fee: totalValue.toString(),
+        year2Fee: "",
+        year3Fee: "",
+        currency: agreement.currency,
+        autoRenewal: agreement.autoRenewal || false,
+      });
+    } else {
+      form.reset({
+        clientId: "",
+        agreementName: "",
+        paymentTerms: "Net 30",
+        year1Fee: "",
+        year2Fee: "",
+        year3Fee: "",
+        currency: "USD",
+        autoRenewal: false,
+      });
+    }
+  });
+
   const createAgreement = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch("/api/agreements", {
-        method: "POST",
+      const url = isEditing ? `/api/agreements/${agreement.id}` : "/api/agreements";
+      const method = isEditing ? "PUT" : "POST";
+      
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
         credentials: "include",
@@ -85,7 +120,7 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create agreement");
+        throw new Error(error.error || `Failed to ${isEditing ? 'update' : 'create'} agreement`);
       }
 
       return response.json();
@@ -94,7 +129,9 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
       queryClient.invalidateQueries({ queryKey: ["/api/agreements"] });
       toast({
         title: "Success",
-        description: "Agreement created successfully. Notifications have been sent to CSM and Finance.",
+        description: isEditing 
+          ? "Agreement updated successfully."
+          : "Agreement created successfully. Notifications have been sent to CSM and Finance.",
       });
       form.reset();
       onOpenChange(false);
@@ -138,9 +175,11 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Agreement</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Agreement' : 'Add New Agreement'}</DialogTitle>
           <DialogDescription>
-            Create a new client agreement with contract details and payment terms.
+            {isEditing 
+              ? 'Update the agreement details and payment terms.'
+              : 'Create a new client agreement with contract details and payment terms.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -402,7 +441,9 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Agreement"}
+                {isSubmitting 
+                  ? (isEditing ? "Updating..." : "Creating...") 
+                  : (isEditing ? "Update Agreement" : "Create Agreement")}
               </Button>
             </div>
           </form>
