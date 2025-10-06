@@ -120,19 +120,12 @@ export function AgreementFormDialog({ open, onOpenChange }: AgreementFormDialogP
       const agreementData = {
         clientId: data.clientId,
         agreementName: data.agreementName,
-        startDate: data.startDate.toISOString(),
-        endDate: data.endDate.toISOString(),
+        startDate: data.startDate,
+        endDate: data.endDate,
         value: totalValue.toString(),
         currency: data.currency,
         status: "active",
         autoRenewal: data.autoRenewal,
-        // Store payment terms and multi-year fees in metadata (we'll need to add this to schema or use notes)
-        paymentTerms: data.paymentTerms,
-        multiYearFees: {
-          year1: year1,
-          year2: year2,
-          year3: year3,
-        },
       };
 
       await createAgreement.mutateAsync(agreementData);
