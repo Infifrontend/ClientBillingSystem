@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, DollarSign, AlertCircle, TrendingUp, Calendar } from "lucide-react";
@@ -12,24 +14,51 @@ import { PageHeader } from "@/components/page-header";
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, isLoading, toast]);
 
   const { data: stats } = useQuery<any>({
     queryKey: ["/api/dashboard/stats"],
+    enabled: isAuthenticated,
   });
 
   const { data: revenueData } = useQuery<any>({
     queryKey: ["/api/dashboard/revenue-trends"],
+    enabled: isAuthenticated,
   });
 
   const { data: clientDistribution } = useQuery<any>({
     queryKey: ["/api/dashboard/client-distribution"],
+    enabled: isAuthenticated,
   });
 
   const { data: upcomingRenewals } = useQuery<any>({
     queryKey: ["/api/dashboard/upcoming-renewals"],
+    enabled: isAuthenticated,
   });
 
   const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-0">
