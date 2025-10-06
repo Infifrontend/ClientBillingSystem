@@ -35,7 +35,18 @@ export default function Services() {
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: services, isLoading: servicesLoading } = useQuery<any>({
-    queryKey: ["/api/services", { search: searchTerm, serviceType: serviceTypeFilter, currency: currencyFilter }],
+    queryKey: ["/api/services", searchTerm, serviceTypeFilter, currencyFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (serviceTypeFilter && serviceTypeFilter !== 'all') params.append('serviceType', serviceTypeFilter);
+      if (currencyFilter && currencyFilter !== 'all') params.append('currency', currencyFilter);
+      
+      const url = `/api/services${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch services');
+      return response.json();
+    },
   });
 
   if (isLoading || !isAuthenticated) {
