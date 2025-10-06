@@ -225,6 +225,7 @@ export default function Agreements() {
                   <TableHead>Agreement Name</TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Payment Terms</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Value</TableHead>
@@ -263,6 +264,13 @@ export default function Agreements() {
                         <Badge variant={getStatusBadgeVariant(agreement.status)}>
                           {agreement.status.replace(/_/g, ' ')}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {agreement.paymentTerms ? (
+                          <span className="text-sm">{agreement.paymentTerms}</span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 text-sm">
@@ -385,6 +393,12 @@ export default function Agreements() {
                       {previewAgreement.status.replace(/_/g, ' ')}
                     </Badge>
                   </div>
+                  {previewAgreement.paymentTerms && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Payment Terms</p>
+                      <p className="font-medium">{previewAgreement.paymentTerms}</p>
+                    </div>
+                  )}
                   {previewAgreement.autoRenewal && (
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Auto-Renewal</p>
@@ -424,7 +438,7 @@ export default function Agreements() {
                   <CardHeader>
                     <CardTitle className="text-lg">Financial Details</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     <div>
                       <p className="text-sm text-muted-foreground mb-1 flex items-center gap-2">
                         <IndianRupee className="h-4 w-4" />
@@ -434,6 +448,28 @@ export default function Agreements() {
                         ₹{previewAgreement.value.toLocaleString()}
                       </p>
                     </div>
+                    {(previewAgreement.year1Fee || previewAgreement.year2Fee || previewAgreement.year3Fee) && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                        {previewAgreement.year1Fee && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Year 1 Fee</p>
+                            <p className="font-medium font-mono">₹{Number(previewAgreement.year1Fee).toLocaleString()}</p>
+                          </div>
+                        )}
+                        {previewAgreement.year2Fee && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Year 2 Fee</p>
+                            <p className="font-medium font-mono">₹{Number(previewAgreement.year2Fee).toLocaleString()}</p>
+                          </div>
+                        )}
+                        {previewAgreement.year3Fee && (
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Year 3 Fee</p>
+                            <p className="font-medium font-mono">₹{Number(previewAgreement.year3Fee).toLocaleString()}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
