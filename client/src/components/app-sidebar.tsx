@@ -73,7 +73,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
   return (
     <Sidebar data-testid="sidebar">
@@ -132,7 +132,7 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {user?.role === "admin" && (
+              {!isLoading && user?.role === "admin" && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild data-testid="sidebar-users">
                     <Link href="/users">

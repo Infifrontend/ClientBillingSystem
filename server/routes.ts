@@ -10,11 +10,16 @@ export function registerRoutes(app: Express) {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      req.user.role = user?.role;
-      res.json(user);
+      if (user) {
+        req.user.role = user.role;
+        res.json(user);
+      } else {
+        res.status(404).json({ error: "User not found" });
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  });
 
 
   app.get("/api/users", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
