@@ -93,11 +93,11 @@ function AuthenticatedApp() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+    <TooltipProvider>
+      <QueryClientProvider client={queryClient}>
         <AuthenticatedApp />
-      </TooltipProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </TooltipProvider>
   );
 }
 
