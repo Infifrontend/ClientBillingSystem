@@ -147,8 +147,60 @@ export default function Reports() {
     return Math.max(0, diffDays);
   };
 
+  // Static data for specific clients
+  const staticOutstandingData = [
+    {
+      id: "static-1",
+      clientId: "cleartrip-client",
+      clientName: "ClearTrip",
+      invoiceNumber: "INV-CT-2025-001",
+      amount: "250000",
+      currency: "INR" as const,
+      issueDate: new Date("2025-01-15"),
+      dueDate: new Date("2025-02-15"),
+      status: "pending" as const,
+      agingDays: calculateAgingDays(new Date("2025-02-15")),
+    },
+    {
+      id: "static-2",
+      clientId: "cleartrip-client",
+      clientName: "ClearTrip",
+      invoiceNumber: "INV-CT-2024-012",
+      amount: "180000",
+      currency: "INR" as const,
+      issueDate: new Date("2024-12-10"),
+      dueDate: new Date("2025-01-10"),
+      status: "overdue" as const,
+      agingDays: calculateAgingDays(new Date("2025-01-10")),
+    },
+    {
+      id: "static-3",
+      clientId: "infiniti-client",
+      clientName: "INFINITI SOFTWARE SOLUTIONS",
+      invoiceNumber: "INV-INF-2025-003",
+      amount: "320000",
+      currency: "INR" as const,
+      issueDate: new Date("2025-01-20"),
+      dueDate: new Date("2025-02-20"),
+      status: "pending" as const,
+      agingDays: calculateAgingDays(new Date("2025-02-20")),
+    },
+    {
+      id: "static-4",
+      clientId: "infiniti-client",
+      clientName: "INFINITI SOFTWARE SOLUTIONS",
+      invoiceNumber: "INV-INF-2024-015",
+      amount: "275000",
+      currency: "INR" as const,
+      issueDate: new Date("2024-11-15"),
+      dueDate: new Date("2024-12-15"),
+      status: "overdue" as const,
+      agingDays: calculateAgingDays(new Date("2024-12-15")),
+    },
+  ];
+
   // Filter outstanding invoices based on selected clients and date range
-  const filteredOutstandingData = invoices
+  const dynamicOutstandingData = invoices
     .map((invoice: Invoice) => {
       const client = clients.find(c => c.id === invoice.clientId);
       const agingDays = calculateAgingDays(invoice.dueDate);
@@ -178,8 +230,58 @@ export default function Reports() {
       return true;
     });
 
+  // Add static data for specific clients when they are selected
+  const filteredStaticData = staticOutstandingData.filter((invoice) => {
+    const selectedClientNames = selectedClients
+      .map(id => clients.find(c => c.id === id)?.name)
+      .filter(Boolean);
+
+    if (selectedClients.length > 0) {
+      const matchesClient = selectedClientNames.some(name => 
+        name === "ClearTrip" && invoice.clientName === "ClearTrip" ||
+        name === "INFINITI SOFTWARE SOLUTIONS" && invoice.clientName === "INFINITI SOFTWARE SOLUTIONS"
+      );
+      if (!matchesClient) return false;
+    }
+
+    // Filter by date range
+    if (dateRange.from || dateRange.to) {
+      const invoiceDate = new Date(invoice.dueDate);
+      if (dateRange.from && invoiceDate < dateRange.from) {
+        return false;
+      }
+      if (dateRange.to && invoiceDate > dateRange.to) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const filteredOutstandingData = [...dynamicOutstandingData, ...filteredStaticData];
+
+  // Static revenue data for specific clients
+  const staticRevenueData = [
+    {
+      id: "cleartrip-revenue",
+      clientName: "ClearTrip",
+      revenueCollected: 1250000,
+      pending: 430000,
+      serviceType: "implementation",
+      location: "Bangalore, India",
+    },
+    {
+      id: "infiniti-revenue",
+      clientName: "INFINITI SOFTWARE SOLUTIONS",
+      revenueCollected: 980000,
+      pending: 595000,
+      serviceType: "subscription",
+      location: "Chennai, India",
+    },
+  ];
+
   // Filter revenue data based on selected clients
-  const filteredRevenueData = clients
+  const dynamicRevenueData = clients
     .filter((client) => {
       // Filter by selected clients
       if (selectedClients.length > 0 && !selectedClients.includes(client.id)) {
@@ -213,6 +315,24 @@ export default function Reports() {
       };
     })
     .filter((item) => item.revenueCollected > 0 || item.pending > 0);
+
+  // Add static revenue data for specific clients when they are selected
+  const filteredStaticRevenue = staticRevenueData.filter((item) => {
+    const selectedClientNames = selectedClients
+      .map(id => clients.find(c => c.id === id)?.name)
+      .filter(Boolean);
+
+    if (selectedClients.length > 0) {
+      return selectedClientNames.some(name => 
+        name === "ClearTrip" && item.clientName === "ClearTrip" ||
+        name === "INFINITI SOFTWARE SOLUTIONS" && item.clientName === "INFINITI SOFTWARE SOLUTIONS"
+      );
+    }
+
+    return false;
+  });
+
+  const filteredRevenueData = [...dynamicRevenueData, ...filteredStaticRevenue];
 
   if (isLoading || !isAuthenticated || invoicesLoading || servicesLoading) {
     return (
