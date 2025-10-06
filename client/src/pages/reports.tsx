@@ -438,7 +438,7 @@ export default function Reports() {
           <SheetTrigger asChild>
             <Button
               size="icon"
-              className="fixed right-6 top-24 z-50 h-14 w-14 rounded-full shadow-lg"
+              className="fixed right-6 bottom-6 z-50 h-14 w-14 rounded-full shadow-lg"
               data-testid="floating-filter-button"
             >
               <Filter className="h-6 w-6" />
