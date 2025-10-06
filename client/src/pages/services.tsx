@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -33,12 +32,12 @@ export default function Services() {
         method: "DELETE",
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to delete service");
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -94,7 +93,7 @@ export default function Services() {
       if (searchTerm) params.append('search', searchTerm);
       if (serviceTypeFilter && serviceTypeFilter !== 'all') params.append('serviceType', serviceTypeFilter);
       if (currencyFilter && currencyFilter !== 'all') params.append('currency', currencyFilter);
-      
+
       const url = `/api/services${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch services');
@@ -189,7 +188,7 @@ export default function Services() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold font-mono text-chart-3" data-testid="stat-mrr">
-              ${(services?.stats?.monthlyRevenue || 0).toLocaleString()}
+              ₹{(services?.stats?.monthlyRevenue || 0).toLocaleString()}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Monthly Revenue</p>
           </CardHeader>
@@ -198,7 +197,7 @@ export default function Services() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-arr">
-              ${(services?.stats?.annualRevenue || 0).toLocaleString()}
+              ₹{(services?.stats?.annualRevenue || 0).toLocaleString()}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Annual Revenue</p>
           </CardHeader>
@@ -258,7 +257,7 @@ export default function Services() {
                     </TableCell>
                     <TableCell>
                       <div className="font-medium font-mono">
-                        {service.currency} {service.amount}
+                        ₹{service.amount}
                       </div>
                     </TableCell>
                     <TableCell>

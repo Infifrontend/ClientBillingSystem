@@ -55,7 +55,7 @@ export default function Insights() {
           </CardHeader>
           <CardContent>
             <p className="text-4xl font-bold font-mono mb-2 text-chart-3">
-              ${(insights?.revenueForecast?.amount || 0).toLocaleString()}
+              ₹{(insights?.revenueForecast?.amount || 0).toLocaleString()}
             </p>
             <div className="flex items-center gap-2">
               <Progress value={insights?.revenueForecast?.confidence || 85} className="flex-1" />
@@ -78,7 +78,7 @@ export default function Insights() {
               {insights?.atRiskClients?.count || 0}
             </p>
             <p className="text-sm text-muted-foreground">
-              Total risk value: ${(insights?.atRiskClients?.totalValue || 0).toLocaleString()}
+              Total risk value: ₹{(insights?.atRiskClients?.totalValue || 0).toLocaleString()}
             </p>
           </CardContent>
         </Card>
@@ -167,7 +167,7 @@ export default function Insights() {
                   <div className="flex-1">
                     <p className="font-medium">{client.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      Revenue: ${client.revenue.toLocaleString()}
+                      Revenue: ₹{client.revenue.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
@@ -206,7 +206,7 @@ export default function Insights() {
                     <p className="text-sm text-muted-foreground">{rec.description}</p>
                     {rec.potentialImpact && (
                       <p className="text-sm text-chart-3 font-medium mt-2">
-                        Potential impact: ${rec.potentialImpact.toLocaleString()}
+                        Potential impact: ₹{rec.potentialImpact.toLocaleString()}
                       </p>
                     )}
                   </div>

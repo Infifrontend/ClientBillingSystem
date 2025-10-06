@@ -56,14 +56,14 @@ export default function Dashboard() {
         />
         <MetricCard
           title="Monthly Revenue"
-          value={`$${(stats?.monthlyRevenue || 0).toLocaleString()}`}
+          value={`₹${(stats?.monthlyRevenue || 0).toLocaleString()}`}
           icon={DollarSign}
           trend={{ value: 18, direction: "up" }}
           testId="metric-revenue"
         />
         <MetricCard
           title="Outstanding"
-          value={`$${(stats?.outstanding || 0).toLocaleString()}`}
+          value={`₹${(stats?.outstanding || 0).toLocaleString()}`}
           icon={AlertCircle}
           iconClassName="bg-destructive/10"
           testId="metric-outstanding"
@@ -151,7 +151,7 @@ export default function Dashboard() {
                       <Badge variant={renewal.daysLeft < 30 ? "destructive" : "default"}>
                         {renewal.daysLeft} days
                       </Badge>
-                      <p className="text-xs text-muted-foreground mt-1">{renewal.value}</p>
+                      <p className="text-xs text-muted-foreground mt-1">₹{renewal.value.toLocaleString()}</p>
                     </div>
                   </div>
                 ))
@@ -177,7 +177,7 @@ export default function Dashboard() {
                   <TrendingUp className="h-5 w-5 text-chart-3" />
                   <h4 className="font-semibold">Revenue Forecast</h4>
                 </div>
-                <p className="text-2xl font-bold font-mono mb-1">${(stats?.forecastedRevenue || 0).toLocaleString()}</p>
+                <p className="text-2xl font-bold font-mono mb-1">₹{(stats?.forecastedRevenue || 0).toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">Predicted next month (85% confidence)</p>
               </div>
 

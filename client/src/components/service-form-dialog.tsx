@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -89,7 +88,7 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
       serviceType: "",
       description: "",
       amount: "",
-      currency: "USD",
+      currency: "INR",
       billingCycle: "",
       isRecurring: false,
       assignedCsmId: "",

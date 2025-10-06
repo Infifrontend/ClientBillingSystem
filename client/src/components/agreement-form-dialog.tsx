@@ -71,7 +71,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
       year1Fee: "",
       year2Fee: "",
       year3Fee: "",
-      currency: "USD",
+      currency: "INR",
       autoRenewal: false,
     },
   });
@@ -100,7 +100,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
         year1Fee: "",
         year2Fee: "",
         year3Fee: "",
-        currency: "USD",
+        currency: "INR",
         autoRenewal: false,
       });
     }

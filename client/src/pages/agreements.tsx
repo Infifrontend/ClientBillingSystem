@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -49,15 +48,15 @@ export default function Agreements() {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
       if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
-      
+
       const response = await fetch(`/api/agreements?${params.toString()}`, {
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch agreements");
       }
-      
+
       return response.json();
     },
   });
@@ -199,7 +198,7 @@ export default function Agreements() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-value">
-              ${(agreements?.stats?.totalValue || 0).toLocaleString()}
+              ₹{(agreements?.stats?.totalValue || 0).toLocaleString()}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Total Contract Value</p>
           </CardHeader>
@@ -282,7 +281,7 @@ export default function Agreements() {
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium font-mono">
-                              {agreement.currency} {agreement.value.toLocaleString()}
+                              ₹{agreement.value.toLocaleString()}
                             </span>
                           </div>
                         )}
@@ -432,7 +431,7 @@ export default function Agreements() {
                         Contract Value
                       </p>
                       <p className="text-2xl font-bold font-mono">
-                        {previewAgreement.currency} {previewAgreement.value.toLocaleString()}
+                        ₹{previewAgreement.value.toLocaleString()}
                       </p>
                     </div>
                   </CardContent>

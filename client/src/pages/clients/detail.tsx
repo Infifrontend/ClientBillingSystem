@@ -194,7 +194,7 @@ export default function ClientDetail() {
                           )}
                         </div>
                         <Badge variant="outline">
-                          {service.currency} {service.amount}
+                          ₹{service.amount}
                         </Badge>
                       </div>
                       <div className="flex gap-4 text-sm text-muted-foreground">
@@ -236,7 +236,7 @@ export default function ClientDetail() {
                           </Badge>
                           {agreement.value && (
                             <p className="text-sm font-medium mt-1">
-                              {agreement.currency} {agreement.value}
+                              ₹{agreement.value}
                             </p>
                           )}
                         </div>

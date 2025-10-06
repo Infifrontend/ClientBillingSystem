@@ -462,7 +462,7 @@ export default function Reports() {
                           <TableCell className="font-mono text-sm">{invoice.invoiceNumber}</TableCell>
                           <TableCell>{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
                           <TableCell className="text-right font-mono font-semibold">
-                            {invoice.currency} {invoice.amount.toLocaleString()}
+                            ₹{invoice.amount.toLocaleString()}
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"} className="font-semibold">
@@ -514,10 +514,10 @@ export default function Reports() {
                         <TableRow key={item.id} data-testid={`revenue-item-${item.id}`} className="hover:bg-muted/30">
                           <TableCell className="font-medium">{item.clientName}</TableCell>
                           <TableCell className="text-right font-mono font-semibold text-green-600 dark:text-green-500">
-                            ${item.revenueCollected.toLocaleString()}
+                            ₹{item.revenueCollected.toLocaleString()}
                           </TableCell>
                           <TableCell className="text-right font-mono font-semibold text-orange-600 dark:text-orange-500">
-                            ${item.pending.toLocaleString()}
+                            ₹{item.pending.toLocaleString()}
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="font-medium">{item.serviceType}</Badge>
