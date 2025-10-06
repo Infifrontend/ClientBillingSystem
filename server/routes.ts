@@ -329,7 +329,14 @@ export function registerRoutes(app: Express) {
   app.post("/api/services", isAuthenticated, async (req: Request, res: Response) => {
     
     try {
-      const validatedData = insertServiceSchema.parse(req.body);
+      // Convert date strings to Date objects
+      const serviceData = {
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        goLiveDate: req.body.goLiveDate ? new Date(req.body.goLiveDate) : undefined,
+      };
+      
+      const validatedData = insertServiceSchema.parse(serviceData);
       const service = await storage.createService(validatedData);
       res.json(service);
     } catch (error: any) {
@@ -342,7 +349,14 @@ export function registerRoutes(app: Express) {
 
   app.patch("/api/services/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const service = await storage.updateService(req.params.id, req.body);
+      // Convert date strings to Date objects
+      const serviceData = {
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        goLiveDate: req.body.goLiveDate ? new Date(req.body.goLiveDate) : undefined,
+      };
+      
+      const service = await storage.updateService(req.params.id, serviceData);
       if (!service) {
         return res.status(404).json({ error: "Service not found" });
       }
