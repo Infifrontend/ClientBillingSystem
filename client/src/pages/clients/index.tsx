@@ -33,7 +33,19 @@ export default function ClientsList() {
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: clients, isLoading: clientsLoading } = useQuery<Client[]>({
-    queryKey: ["/api/clients", { search: searchTerm, status: statusFilter, industry: industryFilter }],
+    queryKey: ["/api/clients"],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
+      if (industryFilter && industryFilter !== "all") params.append("industry", industryFilter);
+      
+      const response = await fetch(`/api/clients?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch clients");
+      }
+      return response.json();
+    },
   });
 
   if (isLoading || !isAuthenticated) {

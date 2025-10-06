@@ -186,13 +186,20 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/clients/:id", isAuthenticated, async (req: Request, res: Response) => {
-    
+  app.get("/api/clients/:id", isAuthenticated, requirePermission("clients:read"), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const client = await storage.getClient(req.params.id);
       if (!client) {
         return res.status(404).json({ error: "Client not found" });
       }
+      
+      const userRole = req.user?.role;
+      const userId = req.user?.claims.sub;
+      
+      if (userRole === "csm" && client.assignedCsmId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       res.json(client);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -212,8 +219,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/clients/:id", isAuthenticated, async (req: Request, res: Response) => {
-    
+  app.patch("/api/clients/:id", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
       const client = await storage.updateClient(req.params.id, req.body);
       if (!client) {
@@ -225,8 +231,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/clients/:id", isAuthenticated, async (req: Request, res: Response) => {
-    
+  app.delete("/api/clients/:id", isAuthenticated, requirePermission("clients:delete"), async (req: Request, res: Response) => {
     try {
       const success = await storage.deleteClient(req.params.id);
       if (!success) {
