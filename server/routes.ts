@@ -4,7 +4,7 @@ import { isAuthenticated } from "./replitAuth";
 import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
-import { log } from "./utils";
+import { log } from "./vite";
 
 
 export function registerRoutes(app: Express) {
