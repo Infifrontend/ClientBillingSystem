@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, FileText, Calendar, DollarSign, AlertCircle } from "lucide-react";
+import { AgreementFormDialog } from "@/components/agreement-form-dialog";
 import type { Agreement } from "@shared/schema";
 
 export default function Agreements() {
@@ -15,6 +16,7 @@ export default function Agreements() {
   const { isAuthenticated, isLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -69,7 +71,7 @@ export default function Agreements() {
           <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Agreements</h1>
           <p className="text-muted-foreground">Manage client contracts and renewals</p>
         </div>
-        <Button data-testid="button-add-agreement">
+        <Button data-testid="button-add-agreement" onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Agreement
         </Button>
@@ -217,13 +219,15 @@ export default function Agreements() {
             <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No agreements found</h3>
             <p className="text-muted-foreground mb-4">Get started by creating your first agreement</p>
-            <Button data-testid="button-add-first-agreement">
+            <Button data-testid="button-add-first-agreement" onClick={() => setIsDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Agreement
             </Button>
           </CardContent>
         </Card>
       )}
+
+      <AgreementFormDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </div>
   );
 }

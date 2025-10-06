@@ -347,6 +347,37 @@ export function registerRoutes(app: Express) {
     try {
       const validatedData = insertAgreementSchema.parse(req.body);
       const agreement = await storage.createAgreement(validatedData);
+      
+      // Create notifications for CSM and Finance about new agreement
+      const client = await storage.getClient(agreement.clientId);
+      
+      // Notify CSM (if assigned)
+      if (client?.assignedCsmId) {
+        await storage.createNotification({
+          userId: client.assignedCsmId,
+          clientId: agreement.clientId,
+          type: "agreement_renewal",
+          title: "New Agreement Created",
+          message: `New agreement "${agreement.agreementName}" has been created for ${client.name}. Contract expires on ${new Date(agreement.endDate).toLocaleDateString()}.`,
+          relatedEntityId: agreement.id,
+        });
+      }
+      
+      // Notify Finance users
+      const users = await storage.getUsers();
+      const financeUsers = users.filter(u => u.role === "finance" || u.role === "admin");
+      
+      for (const financeUser of financeUsers) {
+        await storage.createNotification({
+          userId: financeUser.id,
+          clientId: agreement.clientId,
+          type: "agreement_renewal",
+          title: "New Agreement Created",
+          message: `New agreement "${agreement.agreementName}" created for ${client?.name}. Total value: ${agreement.currency} ${agreement.value}. Payment terms: ${req.body.paymentTerms || "N/A"}.`,
+          relatedEntityId: agreement.id,
+        });
+      }
+      
       res.json(agreement);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
