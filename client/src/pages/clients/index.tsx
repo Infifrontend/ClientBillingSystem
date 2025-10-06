@@ -17,13 +17,15 @@ import type { Client } from "@shared/schema";
 
 export default function ClientsList() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth(); // Added user to check role
   const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [previewClient, setPreviewClient] = useState<Client | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const isAdmin = user?.role === "admin"; // Check if the current user is an admin
 
   const deleteMutation = useMutation({
     mutationFn: async (clientId: string) => {
@@ -79,7 +81,7 @@ export default function ClientsList() {
       if (searchTerm) params.append("search", searchTerm);
       if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
       if (industryFilter && industryFilter !== "all") params.append("industry", industryFilter);
-      
+
       const response = await fetch(`/api/clients?${params.toString()}`);
       if (!response.ok) {
         throw new Error("Failed to fetch clients");
@@ -246,13 +248,15 @@ export default function ClientsList() {
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleDelete(client.id, client.name)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
+                          {isAdmin && ( // Conditionally render delete button only for admins
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(client.id, client.name)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

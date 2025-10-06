@@ -79,6 +79,7 @@ function getRolePermissions(role?: UserRole): string[] {
       return [
         "clients:read",
         "clients:write",
+        "clients:delete",
         "services:read",
         "services:write",
         "agreements:read",
