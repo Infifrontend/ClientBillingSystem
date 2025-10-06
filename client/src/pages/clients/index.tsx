@@ -1,23 +1,52 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Users, Building2, Mail, Phone, MapPin } from "lucide-react";
-import { Link } from "wouter";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Search, Users, Building2, Mail, Phone, MapPin, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Client } from "@shared/schema";
 
 export default function ClientsList() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
+
+  const deleteMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      return await apiRequest("DELETE", `/api/clients/${clientId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: "Client deleted",
+        description: "Client has been deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete client",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = (clientId: string, clientName: string) => {
+    if (window.confirm(`Are you sure you want to delete ${clientName}? This action cannot be undone.`)) {
+      deleteMutation.mutate(clientId);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -134,7 +163,7 @@ export default function ClientsList() {
                   <TableHead>Industry</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Region</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-center w-[80px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -187,12 +216,35 @@ export default function ClientsList() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/clients/${client.id}`}>
-                        <Button variant="ghost" size="sm" data-testid={`view-client-${client.id}`}>
-                          View
-                        </Button>
-                      </Link>
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" data-testid={`actions-menu-${client.id}`}>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate("/clients/new")}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add New Client
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}/edit`)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}`)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(client.id, client.name)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
