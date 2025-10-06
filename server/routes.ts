@@ -457,6 +457,29 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/agreements/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      console.log('[DEBUG] Deleting agreement:', req.params.id);
+      const agreement = await storage.getAgreement(req.params.id);
+      if (!agreement) {
+        console.log('[DEBUG] Agreement not found:', req.params.id);
+        return res.status(404).json({ error: "Agreement not found" });
+      }
+      
+      const success = await storage.deleteAgreement(req.params.id);
+      if (!success) {
+        console.log('[DEBUG] Failed to delete agreement:', req.params.id);
+        return res.status(500).json({ error: "Failed to delete agreement" });
+      }
+      
+      console.log('[DEBUG] Agreement deleted successfully:', req.params.id);
+      res.json({ success: true, message: "Agreement deleted successfully" });
+    } catch (error: any) {
+      console.error('[ERROR] Delete agreement error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/reports/outstanding", isAuthenticated, async (req: Request, res: Response) => {
     
     try {

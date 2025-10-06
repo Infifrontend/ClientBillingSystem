@@ -1,14 +1,19 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, Calendar, DollarSign, AlertCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Search, FileText, Calendar, DollarSign, AlertCircle, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { AgreementFormDialog } from "@/components/agreement-form-dialog";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Agreement } from "@shared/schema";
 
 export default function Agreements() {
@@ -17,6 +22,8 @@ export default function Agreements() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [previewAgreement, setPreviewAgreement] = useState<any | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -50,6 +57,39 @@ export default function Agreements() {
       return response.json();
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (agreementId: string) => {
+      const response = await apiRequest("DELETE", `/api/agreements/${agreementId}`);
+      return response;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/agreements"] });
+      toast({
+        title: "Success",
+        description: data?.message || "Agreement has been deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete agreement. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = (agreementId: string, agreementName: string) => {
+    if (window.confirm(`Are you sure you want to delete ${agreementName}? This action cannot be undone.`)) {
+      deleteMutation.mutate(agreementId);
+    }
+  };
+
+  const handlePreview = (agreement: any) => {
+    setPreviewAgreement(agreement);
+    setIsPreviewOpen(true);
+  };
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -151,83 +191,119 @@ export default function Agreements() {
       </div>
 
       {agreementsLoading ? (
-        <div className="grid grid-cols-1 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-24 bg-muted rounded" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 bg-muted rounded" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       ) : agreements?.data && agreements.data.length > 0 ? (
-        <div className="space-y-4">
-          {agreements.data.map((agreement: any) => {
-            const daysLeft = getDaysUntilExpiry(agreement.endDate);
-            const isExpiringSoon = daysLeft <= 90 && daysLeft >= 0;
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead>Agreement Name</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Start Date</TableHead>
+                  <TableHead>End Date</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead className="text-center w-[80px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {agreements.data.map((agreement: any) => {
+                  const daysLeft = getDaysUntilExpiry(agreement.endDate);
+                  const isExpiringSoon = daysLeft <= 90 && daysLeft >= 0;
 
-            return (
-              <Card key={agreement.id} className="hover-elevate" data-testid={`agreement-${agreement.id}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-lg mb-1" data-testid={`agreement-name-${agreement.id}`}>
-                          {agreement.agreementName}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-2">{agreement.clientName}</p>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant={getStatusBadgeVariant(agreement.status)}>
-                            {agreement.status.replace(/_/g, ' ')}
-                          </Badge>
-                          {isExpiringSoon && (
-                            <Badge variant="outline" className="gap-1">
-                              <AlertCircle className="h-3 w-3" />
-                              {daysLeft} days left
-                            </Badge>
-                          )}
+                  return (
+                    <TableRow key={agreement.id} className="cursor-pointer hover:bg-muted/50" data-testid={`agreement-${agreement.id}`}>
+                      <TableCell>
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-primary" />
                         </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      {agreement.value && (
-                        <p className="text-xl font-bold font-mono">
-                          {agreement.currency} {agreement.value.toLocaleString()}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-muted-foreground">Start Date</p>
-                        <p className="font-medium">{new Date(agreement.startDate).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-muted-foreground">End Date</p>
-                        <p className="font-medium">{new Date(agreement.endDate).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    {agreement.autoRenewal && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 rounded-full bg-chart-3" />
-                        <span className="font-medium">Auto-Renewal Enabled</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-semibold" data-testid={`agreement-name-${agreement.id}`}>
+                          {agreement.agreementName}
+                        </div>
+                        {isExpiringSoon && (
+                          <Badge variant="outline" className="gap-1 mt-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {daysLeft} days left
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span>{agreement.clientName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(agreement.status)}>
+                          {agreement.status.replace(/_/g, ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{new Date(agreement.startDate).toLocaleDateString()}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{new Date(agreement.endDate).toLocaleDateString()}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {agreement.value && (
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium font-mono">
+                              {agreement.currency} {agreement.value.toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" data-testid={`actions-menu-${agreement.id}`}>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add New Agreement
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePreview(agreement)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(agreement.id, agreement.agreementName)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-12 text-center">
@@ -243,6 +319,95 @@ export default function Agreements() {
       )}
 
       <AgreementFormDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Agreement Details</DialogTitle>
+          </DialogHeader>
+          {previewAgreement && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Agreement Information</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Agreement Name</p>
+                    <p className="font-medium">{previewAgreement.agreementName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Client</p>
+                    <p className="font-medium">{previewAgreement.clientName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Status</p>
+                    <Badge variant={getStatusBadgeVariant(previewAgreement.status)}>
+                      {previewAgreement.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
+                  {previewAgreement.autoRenewal && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Auto-Renewal</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-chart-3" />
+                        <span className="font-medium">Enabled</span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Contract Period</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Start Date
+                    </p>
+                    <p className="font-medium">{new Date(previewAgreement.startDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      End Date
+                    </p>
+                    <p className="font-medium">{new Date(previewAgreement.endDate).toLocaleDateString()}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {previewAgreement.value && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Financial Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Contract Value
+                      </p>
+                      <p className="text-2xl font-bold font-mono">
+                        {previewAgreement.currency} {previewAgreement.value.toLocaleString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
