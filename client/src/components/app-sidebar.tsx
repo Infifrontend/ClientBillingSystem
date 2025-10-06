@@ -77,21 +77,21 @@ export function AppSidebar() {
 
   return (
     <Sidebar data-testid="sidebar">
-      <SidebarHeader className="p-6 border-b border-sidebar-border">
+      <SidebarHeader className="p-4 border-b border-sidebar-border/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
-            <Briefcase className="h-6 w-6 text-primary-foreground" />
+          <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center">
+            <Briefcase className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold font-display">Infiniti CMS</h2>
-            <p className="text-xs text-muted-foreground">Client Management</p>
+            <h2 className="text-base font-bold font-display text-white">OfferSense</h2>
+            <p className="text-xs text-white/70">Airline Offer Management</p>
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/50 text-xs uppercase tracking-wider">Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems
@@ -105,7 +105,7 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         asChild
-                        className={isActive ? "bg-sidebar-accent" : ""}
+                        className={isActive ? "bg-white/10 text-white" : "text-white/80 hover:bg-white/5 hover:text-white"}
                         data-testid={item.testId}
                       >
                         <Link href={item.url}>
@@ -121,11 +121,11 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>System</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/50 text-xs uppercase tracking-wider">System</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild data-testid="sidebar-notifications">
+                <SidebarMenuButton asChild data-testid="sidebar-notifications" className="text-white/80 hover:bg-white/5 hover:text-white">
                   <Link href="/notifications">
                     <Bell className="h-4 w-4" />
                     <span>Notifications</span>
@@ -134,7 +134,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               {!isLoading && user?.role === "admin" && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild data-testid="sidebar-users">
+                  <SidebarMenuButton asChild data-testid="sidebar-users" className="text-white/80 hover:bg-white/5 hover:text-white">
                     <Link href="/users">
                       <Users className="h-4 w-4" />
                       <span>Users & Roles</span>
@@ -144,7 +144,7 @@ export function AppSidebar() {
               )}
               {(user?.role === "admin" || user?.role === "manager") && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild data-testid="sidebar-settings">
+                  <SidebarMenuButton asChild data-testid="sidebar-settings" className="text-white/80 hover:bg-white/5 hover:text-white">
                     <Link href="/settings">
                       <Settings className="h-4 w-4" />
                       <span>Settings</span>
@@ -157,24 +157,24 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
+      <SidebarFooter className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
             <span className="text-sm font-medium text-white">
               AD
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate" data-testid="user-name">
-              Admin User
+            <p className="text-sm font-medium truncate text-white" data-testid="user-name">
+              admin
             </p>
-            <p className="text-xs text-muted-foreground truncate">admin@infiniti.com</p>
+            <p className="text-xs text-white/60 truncate">Admin</p>
           </div>
         </div>
         <Button
           variant="outline"
           size="sm"
-          className="w-full"
+          className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
           onClick={() => {
             sessionStorage.removeItem("isLoggedIn");
             window.location.href = "/";
