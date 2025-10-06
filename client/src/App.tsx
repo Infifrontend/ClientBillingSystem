@@ -1,4 +1,5 @@
 import { Switch, Route } from "wouter";
+import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -56,7 +57,19 @@ function AuthenticatedRoutes() {
 
 function Router() {
   // Check if user is logged in using sessionStorage
-  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    sessionStorage.getItem("isLoggedIn") === "true"
+  );
+
+  // Listen for storage changes (in case of login from another tab)
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsLoggedIn(sessionStorage.getItem("isLoggedIn") === "true");
+    };
+    
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
 
   if (isLoggedIn) {
     return <AuthenticatedRoutes />;

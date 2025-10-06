@@ -21,7 +21,8 @@ export default function Login() {
     if (username === "admin" && password === "admin@123") {
       // Store login state in sessionStorage
       sessionStorage.setItem("isLoggedIn", "true");
-      setLocation("/dashboard");
+      // Force a page reload to ensure App.tsx picks up the new session state
+      window.location.href = "/dashboard";
     } else {
       setError("Invalid username or password");
     }
