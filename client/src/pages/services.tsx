@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ServiceFormDialog } from "@/components/service-form-dialog";
-import { Plus, Search, DollarSign, Calendar, Building2, User, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Search, IndianRupee, Calendar, Building2, User, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { Service } from "@shared/schema";
 
@@ -236,7 +236,7 @@ export default function Services() {
                   <TableRow key={service.id} className="cursor-pointer hover:bg-muted/50" data-testid={`service-row-${service.id}`}>
                     <TableCell>
                       <div className="w-10 h-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-chart-2" />
+                        <IndianRupee className="h-5 w-5 text-chart-2" />
                       </div>
                     </TableCell>
                     <TableCell>
@@ -327,7 +327,7 @@ export default function Services() {
       ) : (
         <Card>
           <CardContent className="p-12 text-center">
-            <DollarSign className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <IndianRupee className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No services found</h3>
             <p className="text-muted-foreground mb-4">Get started by adding your first service</p>
             <Button onClick={() => {
