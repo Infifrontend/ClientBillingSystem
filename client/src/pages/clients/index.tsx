@@ -34,7 +34,7 @@ export default function ClientsList() {
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: clients, isLoading: clientsLoading } = useQuery<Client[]>({
-    queryKey: ["/api/clients"],
+    queryKey: ["/api/clients", searchTerm, statusFilter, industryFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
