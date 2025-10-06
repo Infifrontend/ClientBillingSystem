@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/page-header";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Search, Shield } from "lucide-react";
 
@@ -133,14 +134,13 @@ export default function UsersPage() {
   );
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">User Roles & Permissions</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage user access and permissions
-          </p>
-        </div>
+    <div className="space-y-0">
+      <PageHeader 
+        title="User Roles & Permissions" 
+        subtitle="Manage user access and permissions"
+      />
+      <div className="p-6 space-y-6">
+      <div className="flex justify-end items-center">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -344,6 +344,7 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

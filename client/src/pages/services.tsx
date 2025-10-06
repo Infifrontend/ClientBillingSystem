@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ServiceFormDialog } from "@/components/service-form-dialog";
 import { Plus, Search, IndianRupee, Calendar, Building2, User, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { PageHeader } from "@/components/page-header";
 import type { Service } from "@shared/schema";
 
 export default function Services() {
@@ -110,12 +111,13 @@ export default function Services() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Services & Billing</h1>
-          <p className="text-muted-foreground">Manage client services and billing records</p>
-        </div>
+    <div className="space-y-0">
+      <PageHeader 
+        title="Services & Billing" 
+        subtitle="Manage client services and billing records"
+      />
+      <div className="p-6 space-y-6">
+      <div className="flex items-center justify-end">
         <Button onClick={() => {
           setSelectedService(null);
           setIsDialogOpen(true);
@@ -442,6 +444,7 @@ export default function Services() {
           )}
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
