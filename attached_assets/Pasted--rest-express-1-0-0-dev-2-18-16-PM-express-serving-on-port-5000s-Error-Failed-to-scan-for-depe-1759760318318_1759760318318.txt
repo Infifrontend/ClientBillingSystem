@@ -1,0 +1,93 @@
+> rest-express@1.0.0 dev
+2:18:16 PM [express] serving on port 5000s
+Error:   Failed to scan for dependencies from entries:
+  /home/runner/workspace/client/index.html
+
+  ✘ [ERROR] The symbol "Popover" has already been declared
+
+    client/src/components/ui/popover.tsx:37:6:
+      37 │ const Popover = PopoverPrimitive.Root
+         ╵       ~~~~~~~
+
+  The symbol "Popover" was originally declared here:
+
+    client/src/components/ui/popover.tsx:6:6:
+      6 │ const Popover = PopoverPrimitive.Root
+        ╵       ~~~~~~~
+
+
+✘ [ERROR] The symbol "PopoverTrigger" has already been declared
+
+    client/src/components/ui/popover.tsx:39:6:
+      39 │ const PopoverTrigger = PopoverPrimitive.Trigger
+         ╵       ~~~~~~~~~~~~~~
+
+  The symbol "PopoverTrigger" was originally declared here:
+
+    client/src/components/ui/popover.tsx:8:6:
+      8 │ const PopoverTrigger = PopoverPrimitive.Trigger
+        ╵       ~~~~~~~~~~~~~~
+
+
+✘ [ERROR] The symbol "PopoverContent" has already been declared
+
+    client/src/components/ui/popover.tsx:41:6:
+      41 │ const PopoverContent = React.forwardRef<
+         ╵       ~~~~~~~~~~~~~~
+
+  The symbol "PopoverContent" was originally declared here:
+
+    client/src/components/ui/popover.tsx:10:6:
+      10 │ const PopoverContent = React.forwardRef<
+         ╵       ~~~~~~~~~~~~~~
+
+
+✘ [ERROR] Multiple exports with the same name "Popover"
+
+    client/src/components/ui/popover.tsx:60:9:
+      60 │ export { Popover, PopoverTrigger, PopoverContent }
+         ╵          ~~~~~~~
+
+  The name "Popover" was originally exported here:
+
+    client/src/components/ui/popover.tsx:29:9:
+      29 │ export { Popover, PopoverTrigger, PopoverContent }
+         ╵          ~~~~~~~
+
+
+✘ [ERROR] Multiple exports with the same name "PopoverTrigger"
+
+    client/src/components/ui/popover.tsx:60:18:
+      60 │ export { Popover, PopoverTrigger, PopoverContent }
+         ╵                   ~~~~~~~~~~~~~~
+
+  The name "PopoverTrigger" was originally exported here:
+
+    client/src/components/ui/popover.tsx:29:18:
+      29 │ export { Popover, PopoverTrigger, PopoverContent }
+         ╵                   ~~~~~~~~~~~~~~
+
+
+✘ [ERROR] Multiple exports with the same name "PopoverContent"
+
+    client/src/components/ui/popover.tsx:60:34:
+      60 │ export { Popover, PopoverTrigger, PopoverContent }
+         ╵                                   ~~~~~~~~~~~~~~
+
+  The name "PopoverContent" was originally exported here:
+
+    client/src/components/ui/popover.tsx:29:34:
+      29 │ export { Popover, PopoverTrigger, PopoverContent }
+         ╵                                   ~~~~~~~~~~~~~~
+
+
+    at failureErrorWithLog (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+    at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:945:25
+    at runOnEndCallbacks (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1315:45)
+    at buildResponseToResult (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:943:7)
+    at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:955:9
+    at new Promise (<anonymous>)
+    at requestCallbacks.on-end (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:954:54)
+    at handleRequest (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:647:17)
+    at handleIncomingPacket (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:672:7)
+    at Socket.readFromStdout (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
