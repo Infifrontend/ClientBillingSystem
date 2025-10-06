@@ -42,7 +42,7 @@ function AuthenticatedRoutes() {
           </header>
           <main className="flex-1 overflow-auto p-6 bg-background">
             <Switch>
-              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/" component={Dashboard} />
               <Route path="/clients" component={ClientsList} />
               <Route path="/clients/new" component={ClientForm} />
               <Route path="/clients/:id" component={ClientDetail} />
