@@ -136,7 +136,7 @@ export const aiInsights = pgTable("ai_insights", {
   insightType: varchar("insight_type", { length: 50 }).notNull(),
   score: decimal("score", { precision: 5, scale: 2 }),
   prediction: text("prediction"),
-  confidence: decimal("confidence", { precision: 5, 2 }),
+  confidence: decimal("confidence", { precision: 5, scale: 2 }),
   metadata: jsonb("metadata"),
   generatedAt: timestamp("generated_at").defaultNow(),
 });

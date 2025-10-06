@@ -17,32 +17,33 @@ import Reports from "@/pages/reports";
 import Insights from "@/pages/insights";
 import NotFound from "@/pages/not-found";
 
-function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
+function AuthenticatedRoutes() {
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/clients" component={ClientsList} />
-          <Route path="/clients/new" component={ClientForm} />
-          <Route path="/clients/:id" component={ClientDetail} />
-          <Route path="/clients/:id/edit" component={ClientForm} />
-          <Route path="/services" component={Services} />
-          <Route path="/agreements" component={Agreements} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/insights" component={Insights} />
-        </>
-      )}
+      <Route path="/" component={Dashboard} />
+      <Route path="/clients" component={ClientsList} />
+      <Route path="/clients/new" component={ClientForm} />
+      <Route path="/clients/:id" component={ClientDetail} />
+      <Route path="/clients/:id/edit" component={ClientForm} />
+      <Route path="/services" component={Services} />
+      <Route path="/agreements" component={Agreements} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/insights" component={Insights} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
+function PublicRoutes() {
+  return (
+    <Switch>
+      <Route path="/" component={Landing} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function AuthenticatedApp() {
   const { isAuthenticated, isLoading } = useAuth();
   
   const style = {
@@ -50,37 +51,51 @@ function App() {
     "--sidebar-width-icon": "4rem",
   };
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <PublicRoutes />
+        <Toaster />
+      </>
     );
   }
 
   return (
+    <>
+      <SidebarProvider style={style as React.CSSProperties}>
+        <div className="flex h-screen w-full">
+          <AppSidebar />
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <header className="flex items-center justify-between p-4 border-b bg-card">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <div className="text-sm text-muted-foreground">
+                Infiniti Software Solutions
+              </div>
+            </header>
+            <main className="flex-1 overflow-auto p-6 bg-background">
+              <AuthenticatedRoutes />
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+      <Toaster />
+    </>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SidebarProvider style={style as React.CSSProperties}>
-          <div className="flex h-screen w-full">
-            <AppSidebar />
-            <div className="flex flex-col flex-1 overflow-hidden">
-              <header className="flex items-center justify-between p-4 border-b bg-card">
-                <SidebarTrigger data-testid="button-sidebar-toggle" />
-                <div className="text-sm text-muted-foreground">
-                  Infiniti Software Solutions
-                </div>
-              </header>
-              <main className="flex-1 overflow-auto p-6 bg-background">
-                <Router />
-              </main>
-            </div>
-          </div>
-        </SidebarProvider>
-        <Toaster />
+        <AuthenticatedApp />
       </TooltipProvider>
     </QueryClientProvider>
   );
