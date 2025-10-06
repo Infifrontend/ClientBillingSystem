@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -95,6 +95,35 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
     },
   });
 
+  // Reset form when service changes (for edit mode)
+  useEffect(() => {
+    if (service && open) {
+      form.reset({
+        clientId: service.clientId,
+        serviceType: service.serviceType,
+        description: service.description || "",
+        amount: service.amount,
+        currency: service.currency,
+        startDate: service.startDate ? new Date(service.startDate) : undefined,
+        goLiveDate: service.goLiveDate ? new Date(service.goLiveDate) : undefined,
+        billingCycle: service.billingCycle || "",
+        isRecurring: service.isRecurring || false,
+        assignedCsmId: service.assignedCsmId || "",
+      });
+    } else if (!service && open) {
+      form.reset({
+        clientId: "",
+        serviceType: "",
+        description: "",
+        amount: "",
+        currency: "INR",
+        billingCycle: "",
+        isRecurring: false,
+        assignedCsmId: "",
+      });
+    }
+  }, [service, open, form]);
+
   const createService = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch("/api/services", {
@@ -152,6 +181,8 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
         title: "Success",
         description: "Service updated successfully",
       });
+      form.reset();
+      setUploadedFiles([]);
       onOpenChange(false);
     },
     onError: (error: Error) => {
