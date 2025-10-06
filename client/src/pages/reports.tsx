@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import type { Client } from "@shared/schema";
 
 // Static data for Outstanding Report
 const staticOutstandingData = {
@@ -116,15 +118,6 @@ const staticRevenueData = {
   ]
 };
 
-// Static clients for filtering
-const staticClients = [
-  { id: "1", name: "Acme Corporation" },
-  { id: "2", name: "TechStart Inc" },
-  { id: "3", name: "Global Enterprises" },
-  { id: "4", name: "Innovation Labs" },
-  { id: "5", name: "Digital Solutions" }
-];
-
 export default function Reports() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
@@ -133,6 +126,18 @@ export default function Reports() {
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
+  });
+
+  // Fetch clients dynamically
+  const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+    queryFn: async () => {
+      const response = await fetch("/api/clients");
+      if (!response.ok) {
+        throw new Error("Failed to fetch clients");
+      }
+      return response.json();
+    },
   });
 
   useEffect(() => {
@@ -212,7 +217,7 @@ export default function Reports() {
   const filteredOutstandingData = staticOutstandingData.invoices.filter((invoice) => {
     // Filter by client
     if (selectedClients.length > 0) {
-      const client = staticClients.find(c => c.name === invoice.clientName);
+      const client = clients.find(c => c.name === invoice.clientName);
       if (!client || !selectedClients.includes(client.id)) {
         return false;
       }
@@ -236,7 +241,7 @@ export default function Reports() {
   const filteredRevenueData = staticRevenueData.data.filter((item) => {
     // Filter by client
     if (selectedClients.length > 0) {
-      const client = staticClients.find(c => c.name === item.clientName);
+      const client = clients.find(c => c.name === item.clientName);
       if (!client || !selectedClients.includes(client.id)) {
         return false;
       }
@@ -301,22 +306,32 @@ export default function Reports() {
                 <PopoverContent className="w-80 p-0" align="start">
                   <div className="p-4 space-y-3">
                     <div className="font-semibold text-sm border-b pb-2">Select Clients</div>
-                    <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
-                      {staticClients.map((client) => (
-                        <div key={client.id} className="flex items-center space-x-3 p-2.5 hover:bg-accent rounded-md transition-colors cursor-pointer">
-                          <input
-                            type="checkbox"
-                            id={`client-${client.id}`}
-                            checked={selectedClients.includes(client.id)}
-                            onChange={() => toggleClientSelection(client.id)}
-                            className="h-4 w-4 rounded border-input cursor-pointer accent-primary"
-                          />
-                          <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
-                            {client.name}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+                    {clientsLoading ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        Loading clients...
+                      </div>
+                    ) : clients.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        No clients available
+                      </div>
+                    ) : (
+                      <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
+                        {clients.map((client) => (
+                          <div key={client.id} className="flex items-center space-x-3 p-2.5 hover:bg-accent rounded-md transition-colors cursor-pointer">
+                            <input
+                              type="checkbox"
+                              id={`client-${client.id}`}
+                              checked={selectedClients.includes(client.id)}
+                              onChange={() => toggleClientSelection(client.id)}
+                              className="h-4 w-4 rounded border-input cursor-pointer accent-primary"
+                            />
+                            <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
+                              {client.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </PopoverContent>
               </Popover>
