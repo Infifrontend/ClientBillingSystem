@@ -60,7 +60,7 @@ const menuItems = [
     url: "/reports",
     icon: BarChart3,
     testId: "sidebar-reports",
-    roles: ["admin", "finance", "viewer"],
+    roles: ["admin", "csm", "finance", "viewer"],
   },
   {
     title: "AI Insights",
