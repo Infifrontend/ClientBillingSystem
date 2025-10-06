@@ -150,7 +150,7 @@ export default function Reports() {
   }, [isAuthenticated, isLoading, toast]);
 
   const handleExport = (format: "excel" | "pdf" | "csv") => {
-    const data = reportType === "outstanding" ? staticOutstandingData.invoices : staticRevenueData.data;
+    const data = reportType === "outstanding" ? filteredOutstandingData : filteredRevenueData;
     
     if (format === "csv") {
       // Generate CSV
@@ -207,6 +207,43 @@ export default function Reports() {
     setSelectedClients([]);
     setDateRange({ from: undefined, to: undefined });
   };
+
+  // Filter outstanding invoices based on selected clients and date range
+  const filteredOutstandingData = staticOutstandingData.invoices.filter((invoice) => {
+    // Filter by client
+    if (selectedClients.length > 0) {
+      const client = staticClients.find(c => c.name === invoice.clientName);
+      if (!client || !selectedClients.includes(client.id)) {
+        return false;
+      }
+    }
+
+    // Filter by date range
+    if (dateRange.from || dateRange.to) {
+      const invoiceDate = new Date(invoice.dueDate);
+      if (dateRange.from && invoiceDate < dateRange.from) {
+        return false;
+      }
+      if (dateRange.to && invoiceDate > dateRange.to) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Filter revenue data based on selected clients
+  const filteredRevenueData = staticRevenueData.data.filter((item) => {
+    // Filter by client
+    if (selectedClients.length > 0) {
+      const client = staticClients.find(c => c.name === item.clientName);
+      if (!client || !selectedClients.includes(client.id)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -387,26 +424,34 @@ export default function Reports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {staticOutstandingData.invoices.map((invoice) => (
-                      <TableRow key={invoice.id} data-testid={`outstanding-invoice-${invoice.id}`} className="hover:bg-muted/30">
-                        <TableCell className="font-medium">{invoice.clientName}</TableCell>
-                        <TableCell className="font-mono text-sm">{invoice.invoiceNumber}</TableCell>
-                        <TableCell>{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
-                        <TableCell className="text-right font-mono font-semibold">
-                          {invoice.currency} {invoice.amount.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"} className="font-semibold">
-                            {invoice.agingDays} days
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant={invoice.status === "overdue" ? "destructive" : "default"} className="capitalize">
-                            {invoice.status}
-                          </Badge>
+                    {filteredOutstandingData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                          No invoices found matching the selected filters
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredOutstandingData.map((invoice) => (
+                        <TableRow key={invoice.id} data-testid={`outstanding-invoice-${invoice.id}`} className="hover:bg-muted/30">
+                          <TableCell className="font-medium">{invoice.clientName}</TableCell>
+                          <TableCell className="font-mono text-sm">{invoice.invoiceNumber}</TableCell>
+                          <TableCell>{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</TableCell>
+                          <TableCell className="text-right font-mono font-semibold">
+                            {invoice.currency} {invoice.amount.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={invoice.agingDays > 30 ? "destructive" : "secondary"} className="font-semibold">
+                              {invoice.agingDays} days
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant={invoice.status === "overdue" ? "destructive" : "default"} className="capitalize">
+                              {invoice.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -433,21 +478,29 @@ export default function Reports() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {staticRevenueData.data.map((item) => (
-                      <TableRow key={item.id} data-testid={`revenue-item-${item.id}`} className="hover:bg-muted/30">
-                        <TableCell className="font-medium">{item.clientName}</TableCell>
-                        <TableCell className="text-right font-mono font-semibold text-green-600 dark:text-green-500">
-                          ${item.revenueCollected.toLocaleString()}
+                    {filteredRevenueData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          No revenue data found matching the selected filters
                         </TableCell>
-                        <TableCell className="text-right font-mono font-semibold text-orange-600 dark:text-orange-500">
-                          ${item.pending.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="font-medium">{item.serviceType}</Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{item.location}</TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredRevenueData.map((item) => (
+                        <TableRow key={item.id} data-testid={`revenue-item-${item.id}`} className="hover:bg-muted/30">
+                          <TableCell className="font-medium">{item.clientName}</TableCell>
+                          <TableCell className="text-right font-mono font-semibold text-green-600 dark:text-green-500">
+                            ${item.revenueCollected.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-right font-mono font-semibold text-orange-600 dark:text-orange-500">
+                            ${item.pending.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="font-medium">{item.serviceType}</Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{item.location}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
