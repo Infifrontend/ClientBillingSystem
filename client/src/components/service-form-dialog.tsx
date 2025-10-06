@@ -446,14 +446,17 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assign Responsible CSM</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === "unassigned" ? "" : value)} 
+                      value={field.value || "unassigned"}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select CSM" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Unassigned</SelectItem>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
                         {csmUsers?.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.firstName} {user.lastName} ({user.email})
