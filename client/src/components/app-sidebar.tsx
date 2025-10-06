@@ -77,7 +77,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar data-testid="sidebar">
-      <SidebarHeader className="p-4 border-b border-sidebar-border/20">
+      <SidebarHeader className="p-4 border-b border-sidebar-border/90">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center">
             <Briefcase className="h-5 w-5 text-white" />
