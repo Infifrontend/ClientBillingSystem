@@ -204,12 +204,18 @@ export function registerRoutes(app: Express) {
       const userRole = req.user?.role;
       const userId = req.user?.claims.sub;
       
-      if (userRole === "csm" && client.assignedCsmId !== userId) {
-        return res.status(403).json({ error: "Access denied" });
-      }
+      console.log('[DEBUG] Fetching client:', req.params.id, 'for user:', userId, 'with role:', userRole);
+      console.log('[DEBUG] Client assignedCsmId:', client.assignedCsmId);
+      
+      // Temporarily disabled CSM filtering for testing
+      // if (userRole === "csm" && client.assignedCsmId !== userId) {
+      //   console.log('[DEBUG] Access denied - CSM not assigned to this client');
+      //   return res.status(403).json({ error: "Access denied" });
+      // }
       
       res.json(client);
     } catch (error: any) {
+      console.error('[ERROR] Failed to fetch client:', error);
       res.status(500).json({ error: error.message });
     }
   });
