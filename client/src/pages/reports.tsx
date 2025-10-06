@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/page-header";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Client, Invoice, Service } from "@shared/schema";
@@ -26,6 +27,7 @@ export default function Reports() {
     from: undefined,
     to: undefined,
   });
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Fetch clients dynamically
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -344,43 +346,65 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 relative">
       <PageHeader 
         title="Reports" 
         subtitle="Financial analytics and outstanding invoices"
       />
       <div className="p-6 space-y-6">
 
-      <Card className="border-2 shadow-sm">
-        <CardContent className="pt-6 space-y-5">
-          {/* First Row: Title/Subtitle on left, Export buttons on right */}
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary" />
-                Filters & Export
-              </CardTitle>
-              <CardDescription className="mt-1">Filter data and export reports in your preferred format</CardDescription>
+      {/* Floating Filter Button */}
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerTrigger asChild>
+          <Button 
+            size="icon"
+            className="fixed right-6 top-24 z-50 h-14 w-14 rounded-full shadow-lg"
+            data-testid="floating-filter-button"
+          >
+            <Filter className="h-6 w-6" />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader className="border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <DrawerTitle className="text-xl flex items-center gap-2">
+                  <Filter className="h-5 w-5 text-primary" />
+                  Filters & Export
+                </DrawerTitle>
+                <DrawerDescription className="mt-1">
+                  Filter data and export reports in your preferred format
+                </DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" data-testid="drawer-close-button">
+                  <X className="h-5 w-5" />
+                </Button>
+              </DrawerClose>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground mr-1">Export:</span>
-              <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2 hover:bg-green-50 hover:text-green-700 hover:border-green-200 dark:hover:bg-green-950 dark:hover:text-green-400">
-                <FileDown className="h-4 w-4" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400">
-                <FileDown className="h-4 w-4" />
-                PDF
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:text-blue-400">
-                <FileDown className="h-4 w-4" />
-                CSV
-              </Button>
+          </DrawerHeader>
+          
+          <div className="p-6 space-y-6 overflow-y-auto">
+            {/* Export Buttons */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Export Options</label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleExport("excel")} data-testid="button-export-excel" className="gap-2 hover:bg-green-50 hover:text-green-700 hover:border-green-200 dark:hover:bg-green-950 dark:hover:text-green-400">
+                  <FileDown className="h-4 w-4" />
+                  Excel
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleExport("pdf")} data-testid="button-export-pdf" className="gap-2 hover:bg-red-50 hover:text-red-700 hover:border-red-200 dark:hover:bg-red-950 dark:hover:text-red-400">
+                  <FileDown className="h-4 w-4" />
+                  PDF
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="button-export-csv" className="gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:text-blue-400">
+                  <FileDown className="h-4 w-4" />
+                  CSV
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Second Row: Client multi-select, Date Range, Clear Filters button */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t">
+            {/* Client Filter */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Client (Multi-select)</label>
               <Popover>
@@ -420,12 +444,12 @@ export default function Reports() {
                           <div key={client.id} className="flex items-center space-x-3 p-2.5 hover:bg-accent rounded-md transition-colors cursor-pointer">
                             <input
                               type="checkbox"
-                              id={`client-${client.id}`}
+                              id={`drawer-client-${client.id}`}
                               checked={selectedClients.includes(client.id)}
                               onChange={() => toggleClientSelection(client.id)}
                               className="h-4 w-4 rounded border-input cursor-pointer accent-primary"
                             />
-                            <label htmlFor={`client-${client.id}`} className="text-sm flex-1 cursor-pointer">
+                            <label htmlFor={`drawer-client-${client.id}`} className="text-sm flex-1 cursor-pointer">
                               {client.name}
                             </label>
                           </div>
@@ -437,6 +461,7 @@ export default function Reports() {
               </Popover>
             </div>
 
+            {/* Date Range Filter */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Date Range</label>
               <Popover>
@@ -486,8 +511,8 @@ export default function Reports() {
               </Popover>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-foreground invisible">Actions</label>
+            {/* Clear Filters Button */}
+            <div className="pt-4 border-t">
               <Button 
                 variant="outline" 
                 className="w-full h-11 gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
@@ -498,8 +523,8 @@ export default function Reports() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </DrawerContent>
+      </Drawer>
 
       <Tabs defaultValue="outstanding" onValueChange={setReportType}>
         <TabsList className="grid w-full max-w-md grid-cols-2 h-11">
