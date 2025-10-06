@@ -27,19 +27,21 @@ export default function ClientsList() {
 
   const deleteMutation = useMutation({
     mutationFn: async (clientId: string) => {
-      return await apiRequest("DELETE", `/api/clients/${clientId}`);
+      const response = await apiRequest("DELETE", `/api/clients/${clientId}`);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       toast({
-        title: "Client deleted",
-        description: "Client has been deleted successfully.",
+        title: "Success",
+        description: data?.message || "Client has been deleted successfully.",
       });
     },
     onError: (error: any) => {
+      console.error('Delete error:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete client",
+        description: error.message || "Failed to delete client. Please try again.",
         variant: "destructive",
       });
     },

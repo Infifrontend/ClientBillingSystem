@@ -232,24 +232,51 @@ export function registerRoutes(app: Express) {
 
   app.patch("/api/clients/:id", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
-      const client = await storage.updateClient(req.params.id, req.body);
-      if (!client) {
+      console.log('[DEBUG] Updating client:', req.params.id, 'with data:', req.body);
+      
+      // Check if client exists first
+      const existingClient = await storage.getClient(req.params.id);
+      if (!existingClient) {
+        console.log('[DEBUG] Client not found for update:', req.params.id);
         return res.status(404).json({ error: "Client not found" });
       }
+      
+      const client = await storage.updateClient(req.params.id, req.body);
+      if (!client) {
+        console.log('[DEBUG] Failed to update client:', req.params.id);
+        return res.status(500).json({ error: "Failed to update client" });
+      }
+      
+      console.log('[DEBUG] Client updated successfully:', client.id);
       res.json(client);
     } catch (error: any) {
+      console.error('[ERROR] Update client error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
       res.status(500).json({ error: error.message });
     }
   });
 
   app.delete("/api/clients/:id", isAuthenticated, requirePermission("clients:delete"), async (req: Request, res: Response) => {
     try {
-      const success = await storage.deleteClient(req.params.id);
-      if (!success) {
+      console.log('[DEBUG] Deleting client:', req.params.id);
+      const client = await storage.getClient(req.params.id);
+      if (!client) {
+        console.log('[DEBUG] Client not found:', req.params.id);
         return res.status(404).json({ error: "Client not found" });
       }
-      res.json({ success: true });
+      
+      const success = await storage.deleteClient(req.params.id);
+      if (!success) {
+        console.log('[DEBUG] Failed to delete client:', req.params.id);
+        return res.status(500).json({ error: "Failed to delete client" });
+      }
+      
+      console.log('[DEBUG] Client deleted successfully:', req.params.id);
+      res.json({ success: true, message: "Client deleted successfully" });
     } catch (error: any) {
+      console.error('[ERROR] Delete client error:', error);
       res.status(500).json({ error: error.message });
     }
   });
