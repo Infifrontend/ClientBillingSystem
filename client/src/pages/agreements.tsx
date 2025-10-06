@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, FileText, Calendar, DollarSign, AlertCircle, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Search, FileText, Calendar, IndianRupee, AlertCircle, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { AgreementFormDialog } from "@/components/agreement-form-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Agreement } from "@shared/schema";
@@ -279,9 +279,9 @@ export default function Agreements() {
                       <TableCell>
                         {agreement.value && (
                           <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <IndianRupee className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium font-mono">
-                              ₹{agreement.value.toLocaleString()}
+                              {agreement.value.toLocaleString()}
                             </span>
                           </div>
                         )}
@@ -427,7 +427,7 @@ export default function Agreements() {
                   <CardContent>
                     <div>
                       <p className="text-sm text-muted-foreground mb-1 flex items-center gap-2">
-                        <DollarSign className="h-4 w-4" />
+                        <IndianRupee className="h-4 w-4" />
                         Contract Value
                       </p>
                       <p className="text-2xl font-bold font-mono">

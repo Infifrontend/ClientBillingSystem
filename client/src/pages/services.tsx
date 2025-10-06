@@ -6,12 +6,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ServiceFormDialog } from "@/components/service-form-dialog";
-import { Plus, Search, DollarSign, Calendar, Building2, User, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  IndianRupee,
+  Calendar,
+  Building2,
+  User,
+  MoreVertical,
+  Edit,
+  Eye,
+  Trash2,
+} from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { Service } from "@shared/schema";
 
@@ -50,14 +84,23 @@ export default function Services() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete service. Please try again.",
+        description:
+          error.message || "Failed to delete service. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const handleDelete = (serviceId: string, serviceType: string, clientName: string) => {
-    if (window.confirm(`Are you sure you want to delete ${serviceType} service for ${clientName}? This action cannot be undone.`)) {
+  const handleDelete = (
+    serviceId: string,
+    serviceType: string,
+    clientName: string,
+  ) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${serviceType} service for ${clientName}? This action cannot be undone.`,
+      )
+    ) {
       deleteMutation.mutate(serviceId);
     }
   };
@@ -90,13 +133,15 @@ export default function Services() {
     queryKey: ["/api/services", searchTerm, serviceTypeFilter, currencyFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (serviceTypeFilter && serviceTypeFilter !== 'all') params.append('serviceType', serviceTypeFilter);
-      if (currencyFilter && currencyFilter !== 'all') params.append('currency', currencyFilter);
+      if (searchTerm) params.append("search", searchTerm);
+      if (serviceTypeFilter && serviceTypeFilter !== "all")
+        params.append("serviceType", serviceTypeFilter);
+      if (currencyFilter && currencyFilter !== "all")
+        params.append("currency", currencyFilter);
 
-      const url = `/api/services${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `/api/services${params.toString() ? `?${params.toString()}` : ""}`;
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch services');
+      if (!response.ok) throw new Error("Failed to fetch services");
       return response.json();
     },
   });
@@ -113,13 +158,23 @@ export default function Services() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Services & Billing</h1>
-          <p className="text-muted-foreground">Manage client services and billing records</p>
+          <h1
+            className="text-3xl font-bold font-display mb-2"
+            data-testid="page-title"
+          >
+            Services & Billing
+          </h1>
+          <p className="text-muted-foreground">
+            Manage client services and billing records
+          </p>
         </div>
-        <Button onClick={() => {
-          setSelectedService(null);
-          setIsDialogOpen(true);
-        }} data-testid="button-add-service">
+        <Button
+          onClick={() => {
+            setSelectedService(null);
+            setIsDialogOpen(true);
+          }}
+          data-testid="button-add-service"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Service
         </Button>
@@ -138,8 +193,14 @@ export default function Services() {
                 data-testid="input-search"
               />
             </div>
-            <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
-              <SelectTrigger className="w-full md:w-[200px]" data-testid="select-service-type">
+            <Select
+              value={serviceTypeFilter}
+              onValueChange={setServiceTypeFilter}
+            >
+              <SelectTrigger
+                className="w-full md:w-[200px]"
+                data-testid="select-service-type"
+              >
                 <SelectValue placeholder="Service Type" />
               </SelectTrigger>
               <SelectContent>
@@ -152,7 +213,10 @@ export default function Services() {
               </SelectContent>
             </Select>
             <Select value={currencyFilter} onValueChange={setCurrencyFilter}>
-              <SelectTrigger className="w-full md:w-[150px]" data-testid="select-currency">
+              <SelectTrigger
+                className="w-full md:w-[150px]"
+                data-testid="select-currency"
+              >
                 <SelectValue placeholder="Currency" />
               </SelectTrigger>
               <SelectContent>
@@ -169,7 +233,10 @@ export default function Services() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-total">
+            <CardTitle
+              className="text-2xl font-bold font-mono"
+              data-testid="stat-total"
+            >
               {services?.stats?.total || 0}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Total Services</p>
@@ -178,7 +245,10 @@ export default function Services() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-recurring">
+            <CardTitle
+              className="text-2xl font-bold font-mono"
+              data-testid="stat-recurring"
+            >
               {services?.stats?.recurring || 0}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Recurring Services</p>
@@ -187,7 +257,10 @@ export default function Services() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono text-chart-3" data-testid="stat-mrr">
+            <CardTitle
+              className="text-2xl font-bold font-mono text-chart-3"
+              data-testid="stat-mrr"
+            >
               ₹{(services?.stats?.monthlyRevenue || 0).toLocaleString()}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Monthly Revenue</p>
@@ -196,7 +269,10 @@ export default function Services() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-arr">
+            <CardTitle
+              className="text-2xl font-bold font-mono"
+              data-testid="stat-arr"
+            >
               ₹{(services?.stats?.annualRevenue || 0).toLocaleString()}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Annual Revenue</p>
@@ -228,20 +304,29 @@ export default function Services() {
                   <TableHead>Start Date</TableHead>
                   <TableHead>Go-Live Date</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-center w-[80px]">Actions</TableHead>
+                  <TableHead className="text-center w-[80px]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {services.data.map((service: any) => (
-                  <TableRow key={service.id} className="cursor-pointer hover:bg-muted/50" data-testid={`service-row-${service.id}`}>
+                  <TableRow
+                    key={service.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    data-testid={`service-row-${service.id}`}
+                  >
                     <TableCell>
                       <div className="w-10 h-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-                        <DollarSign className="h-5 w-5 text-chart-2" />
+                        <IndianRupee className="h-5 w-5 text-chart-2" />
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-semibold capitalize" data-testid={`service-type-${service.id}`}>
-                        {service.serviceType.replace(/_/g, ' ')}
+                      <div
+                        className="font-semibold capitalize"
+                        data-testid={`service-type-${service.id}`}
+                      >
+                        {service.serviceType.replace(/_/g, " ")}
                       </div>
                       {service.description && (
                         <p className="text-sm text-muted-foreground truncate max-w-[200px]">
@@ -262,7 +347,9 @@ export default function Services() {
                     </TableCell>
                     <TableCell>
                       {service.billingCycle ? (
-                        <span className="capitalize">{service.billingCycle.replace(/-/g, ' ')}</span>
+                        <span className="capitalize">
+                          {service.billingCycle.replace(/-/g, " ")}
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
@@ -271,7 +358,9 @@ export default function Services() {
                       {service.startDate ? (
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{new Date(service.startDate).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(service.startDate).toLocaleDateString()}
+                          </span>
                         </div>
                       ) : (
                         <span className="text-muted-foreground">-</span>
@@ -281,7 +370,9 @@ export default function Services() {
                       {service.goLiveDate ? (
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{new Date(service.goLiveDate).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(service.goLiveDate).toLocaleDateString()}
+                          </span>
                         </div>
                       ) : (
                         <span className="text-muted-foreground">-</span>
@@ -289,13 +380,19 @@ export default function Services() {
                     </TableCell>
                     <TableCell>
                       {service.isRecurring && (
-                        <Badge variant="outline" className="text-xs">Recurring</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Recurring
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" data-testid={`actions-menu-${service.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            data-testid={`actions-menu-${service.id}`}
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -304,12 +401,20 @@ export default function Services() {
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePreview(service)}>
+                          <DropdownMenuItem
+                            onClick={() => handlePreview(service)}
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDelete(service.id, service.serviceType, service.clientName)}
+                            onClick={() =>
+                              handleDelete(
+                                service.id,
+                                service.serviceType,
+                                service.clientName,
+                              )
+                            }
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
@@ -327,13 +432,18 @@ export default function Services() {
       ) : (
         <Card>
           <CardContent className="p-12 text-center">
-            <DollarSign className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <IndianRupee className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No services found</h3>
-            <p className="text-muted-foreground mb-4">Get started by adding your first service</p>
-            <Button onClick={() => {
-              setSelectedService(null);
-              setIsDialogOpen(true);
-            }} data-testid="button-add-first-service">
+            <p className="text-muted-foreground mb-4">
+              Get started by adding your first service
+            </p>
+            <Button
+              onClick={() => {
+                setSelectedService(null);
+                setIsDialogOpen(true);
+              }}
+              data-testid="button-add-first-service"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Service
             </Button>
@@ -363,8 +473,12 @@ export default function Services() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Service Type</p>
-                    <p className="font-medium capitalize">{previewService.serviceType.replace(/_/g, ' ')}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Service Type
+                    </p>
+                    <p className="font-medium capitalize">
+                      {previewService.serviceType.replace(/_/g, " ")}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Client</p>
@@ -372,11 +486,17 @@ export default function Services() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Amount</p>
-                    <p className="font-medium font-mono">{previewService.currency} {previewService.amount}</p>
+                    <p className="font-medium font-mono">
+                      {previewService.currency} {previewService.amount}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Billing Cycle</p>
-                    <p className="font-medium capitalize">{previewService.billingCycle?.replace(/-/g, ' ') || 'N/A'}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Billing Cycle
+                    </p>
+                    <p className="font-medium capitalize">
+                      {previewService.billingCycle?.replace(/-/g, " ") || "N/A"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Status</p>
@@ -411,7 +531,11 @@ export default function Services() {
                         <Calendar className="h-4 w-4" />
                         Start Date
                       </p>
-                      <p className="font-medium">{new Date(previewService.startDate).toLocaleDateString()}</p>
+                      <p className="font-medium">
+                        {new Date(
+                          previewService.startDate,
+                        ).toLocaleDateString()}
+                      </p>
                     </div>
                   )}
                   {previewService.goLiveDate && (
@@ -420,20 +544,29 @@ export default function Services() {
                         <Calendar className="h-4 w-4" />
                         Go-Live Date
                       </p>
-                      <p className="font-medium">{new Date(previewService.goLiveDate).toLocaleDateString()}</p>
+                      <p className="font-medium">
+                        {new Date(
+                          previewService.goLiveDate,
+                        ).toLocaleDateString()}
+                      </p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPreviewOpen(false)}
+                >
                   Close
                 </Button>
-                <Button onClick={() => {
-                  setIsPreviewOpen(false);
-                  handleEdit(previewService);
-                }}>
+                <Button
+                  onClick={() => {
+                    setIsPreviewOpen(false);
+                    handleEdit(previewService);
+                  }}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Service
                 </Button>

@@ -83,34 +83,40 @@ export function AppSidebar() {
             <Briefcase className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="text-base font-bold font-display text-white">OfferSense</h2>
-            <p className="text-xs text-white/70">Airline Offer Management</p>
+            <h2 className="text-base font-bold font-display text-white">
+              Client Management & Billing System
+            </h2>
+            {/* <p className="text-xs text-white/70">Airline Offer Management</p> */}
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/50 text-xs uppercase tracking-wider">Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems
                 .filter((item) => !user?.role || item.roles.includes(user.role))
                 .map((item) => {
-                  const isActive = item.url === "/" 
-                    ? location === "/" 
-                    : location.startsWith(item.url);
-                  
+                  const isActive =
+                    item.url === "/"
+                      ? location === "/"
+                      : location.startsWith(item.url);
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         asChild
-                        className={isActive ? "bg-white/10 text-white" : "text-white/80 hover:bg-white/5 hover:text-white"}
+                        className={
+                          isActive
+                            ? "bg-white/10 text-white"
+                            : "text-white/80 hover:bg-white/5 hover:text-white"
+                        }
                         data-testid={item.testId}
                       >
                         <Link href={item.url}>
                           <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
+                          <span className="text-lg">{item.title}</span> {/* Increased font size */}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -121,11 +127,17 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/50 text-xs uppercase tracking-wider">System</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/50 text-xs uppercase tracking-wider">
+            System
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild data-testid="sidebar-notifications" className="text-white/80 hover:bg-white/5 hover:text-white">
+                <SidebarMenuButton
+                  asChild
+                  data-testid="sidebar-notifications"
+                  className="text-white/80 hover:bg-white/5 hover:text-white"
+                >
                   <Link href="/notifications">
                     <Bell className="h-4 w-4" />
                     <span>Notifications</span>
@@ -134,7 +146,11 @@ export function AppSidebar() {
               </SidebarMenuItem>
               {!isLoading && user?.role === "admin" && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild data-testid="sidebar-users" className="text-white/80 hover:bg-white/5 hover:text-white">
+                  <SidebarMenuButton
+                    asChild
+                    data-testid="sidebar-users"
+                    className="text-white/80 hover:bg-white/5 hover:text-white"
+                  >
                     <Link href="/users">
                       <Users className="h-4 w-4" />
                       <span>Users & Roles</span>
@@ -144,7 +160,11 @@ export function AppSidebar() {
               )}
               {(user?.role === "admin" || user?.role === "manager") && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild data-testid="sidebar-settings" className="text-white/80 hover:bg-white/5 hover:text-white">
+                  <SidebarMenuButton
+                    asChild
+                    data-testid="sidebar-settings"
+                    className="text-white/80 hover:bg-white/5 hover:text-white"
+                  >
                     <Link href="/settings">
                       <Settings className="h-4 w-4" />
                       <span>Settings</span>
@@ -160,12 +180,13 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-sm font-medium text-white">
-              AD
-            </span>
+            <span className="text-sm font-medium text-white">AD</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-white" data-testid="user-name">
+            <p
+              className="text-sm font-medium truncate text-white"
+              data-testid="user-name"
+            >
               admin
             </p>
             <p className="text-xs text-white/60 truncate">Admin</p>
