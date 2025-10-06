@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -77,7 +77,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
   });
 
   // Update form when agreement changes
-  useState(() => {
+  useEffect(() => {
     if (agreement) {
       const totalValue = parseFloat(agreement.value || "0");
       form.reset({
@@ -104,7 +104,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
         autoRenewal: false,
       });
     }
-  });
+  }, [agreement, form]);
 
   const createAgreement = useMutation({
     mutationFn: async (data: any) => {
@@ -192,7 +192,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Client *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isEditing}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a client" />
@@ -219,7 +219,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                 <FormItem>
                   <FormLabel>Agreement Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Annual Service Agreement 2024" {...field} />
+                    <Input placeholder="e.g., Annual Service Agreement 2024" {...field} disabled={isEditing} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
