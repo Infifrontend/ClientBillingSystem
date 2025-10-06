@@ -15,6 +15,7 @@ import Services from "@/pages/services";
 import Agreements from "@/pages/agreements";
 import Reports from "@/pages/reports";
 import Insights from "@/pages/insights";
+import UsersPage from "./pages/users";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 
@@ -46,6 +47,7 @@ function AuthenticatedRoutes() {
               <Route path="/agreements" component={Agreements} />
               <Route path="/reports" component={Reports} />
               <Route path="/insights" component={Insights} />
+              <Route path="/users" component={UsersPage} />
               <Route component={NotFound} />
             </Switch>
           </main>
@@ -66,7 +68,7 @@ function Router() {
     const checkAuth = () => {
       setIsLoggedIn(sessionStorage.getItem("isLoggedIn") === "true");
     };
-    
+
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);

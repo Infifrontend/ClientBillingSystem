@@ -1,18 +1,57 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
-import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema } from "@shared/schema";
+import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
 
 export function registerRoutes(app: Express) {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
+      req.user.role = user?.role;
       res.json(user);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+
+
+  app.get("/api/users", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/users", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const user = await storage.createUser(validatedData);
+      res.json(user);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/users/:id/role", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
+    try {
+      const { role } = req.body;
+      const user = await storage.updateUserRole(req.params.id, role);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   });
 
   app.get("/api/dashboard/stats", isAuthenticated, async (req: Request, res: Response) => {
@@ -122,15 +161,21 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/clients", isAuthenticated, async (req: Request, res: Response) => {
-    
+  app.get("/api/clients", isAuthenticated, requirePermission("clients:read"), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { search, status, industry } = req.query;
-      const clients = await storage.getClients({
+      const userId = req.user?.claims.sub;
+      const userRole = req.user?.role;
+      
+      let clients = await storage.getClients({
         search: search as string,
         status: status as string,
         industry: industry as string,
       });
+      
+      if (userRole === "csm") {
+        clients = clients.filter(client => client.assignedCsmId === userId);
+      }
       
       res.json(clients);
     } catch (error: any) {
@@ -151,8 +196,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/clients", isAuthenticated, async (req: Request, res: Response) => {
-    
+  app.post("/api/clients", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
       const validatedData = insertClientSchema.parse(req.body);
       const client = await storage.createClient(validatedData);

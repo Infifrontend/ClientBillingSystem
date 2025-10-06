@@ -32,36 +32,42 @@ const menuItems = [
     url: "/",
     icon: LayoutDashboard,
     testId: "sidebar-dashboard",
+    roles: ["admin", "csm", "finance", "viewer"],
   },
   {
     title: "Clients",
     url: "/clients",
     icon: Users,
     testId: "sidebar-clients",
+    roles: ["admin", "csm", "finance", "viewer"],
   },
   {
     title: "Services & Billing",
     url: "/services",
     icon: DollarSign,
     testId: "sidebar-services",
+    roles: ["admin", "csm", "finance", "viewer"],
   },
   {
     title: "Agreements",
     url: "/agreements",
     icon: FileText,
     testId: "sidebar-agreements",
+    roles: ["admin", "csm", "finance", "viewer"],
   },
   {
     title: "Reports",
     url: "/reports",
     icon: BarChart3,
     testId: "sidebar-reports",
+    roles: ["admin", "finance", "viewer"],
   },
   {
     title: "AI Insights",
     url: "/insights",
     icon: TrendingUp,
     testId: "sidebar-insights",
+    roles: ["admin", "csm", "finance", "viewer"],
   },
 ];
 
@@ -88,26 +94,28 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = item.url === "/" 
-                  ? location === "/" 
-                  : location.startsWith(item.url);
-                
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className={isActive ? "bg-sidebar-accent" : ""}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {menuItems
+                .filter((item) => !user?.role || item.roles.includes(user.role))
+                .map((item) => {
+                  const isActive = item.url === "/" 
+                    ? location === "/" 
+                    : location.startsWith(item.url);
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className={isActive ? "bg-sidebar-accent" : ""}
+                        data-testid={item.testId}
+                      >
+                        <Link href={item.url}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -124,6 +132,16 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {user?.role === "admin" && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild data-testid="sidebar-users">
+                    <Link href="/users">
+                      <Users className="h-4 w-4" />
+                      <span>Users & Roles</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               {(user?.role === "admin" || user?.role === "manager") && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild data-testid="sidebar-settings">

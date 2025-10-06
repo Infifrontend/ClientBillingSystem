@@ -27,7 +27,7 @@ export const sessions = pgTable(
 );
 
 // Enums
-export const userRoleEnum = pgEnum("user_role", ["admin", "finance", "csm", "manager"]);
+export const userRoleEnum = pgEnum("user_role", ["admin", "finance", "csm", "viewer"]);
 export const clientStatusEnum = pgEnum("client_status", ["active", "inactive"]);
 export const industryEnum = pgEnum("industry", ["airlines", "travel_agency", "gds", "ota", "aviation_services"]);
 export const serviceTypeEnum = pgEnum("service_type", ["implementation", "cr", "subscription", "hosting", "others"]);
@@ -43,7 +43,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: userRoleEnum("role").default("csm").notNull(),
+  role: userRoleEnum("role").default("viewer").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

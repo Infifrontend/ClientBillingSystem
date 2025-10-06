@@ -33,35 +33,40 @@ export interface IStorage {
   createUser(user: User): Promise<User>;
   upsertUser(user: any): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
-  
+
+  // New user management methods
+  getUsers(): Promise<User[]>;
+  updateUserRole(userId: string, role: string): Promise<User | undefined>;
+
+
   getClients(filters?: { search?: string; status?: string; industry?: string; assignedCsmId?: string }): Promise<Client[]>;
   getClient(id: string): Promise<Client | undefined>;
   createClient(client: InsertClient): Promise<Client>;
   updateClient(id: string, updates: Partial<InsertClient>): Promise<Client | undefined>;
   deleteClient(id: string): Promise<boolean>;
-  
+
   getServices(filters?: { search?: string; clientId?: string; serviceType?: string; currency?: string }): Promise<Service[]>;
   getService(id: string): Promise<Service | undefined>;
   createService(service: InsertService): Promise<Service>;
   updateService(id: string, updates: Partial<InsertService>): Promise<Service | undefined>;
   deleteService(id: string): Promise<boolean>;
-  
+
   getAgreements(filters?: { search?: string; clientId?: string; status?: string }): Promise<Agreement[]>;
   getAgreement(id: string): Promise<Agreement | undefined>;
   createAgreement(agreement: InsertAgreement): Promise<Agreement>;
   updateAgreement(id: string, updates: Partial<InsertAgreement>): Promise<Agreement | undefined>;
   deleteAgreement(id: string): Promise<boolean>;
-  
+
   getInvoices(filters?: { clientId?: string; status?: string; currency?: string; period?: string }): Promise<Invoice[]>;
   getInvoice(id: string): Promise<Invoice | undefined>;
   createInvoice(invoice: InsertInvoice): Promise<Invoice>;
   updateInvoice(id: string, updates: Partial<InsertInvoice>): Promise<Invoice | undefined>;
   deleteInvoice(id: string): Promise<boolean>;
-  
+
   getNotifications(filters?: { userId?: string; isRead?: boolean }): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationRead(id: string): Promise<boolean>;
-  
+
   getAiInsights(filters?: { clientId?: string; insightType?: string }): Promise<AiInsight[]>;
   createAiInsight(insight: InsertAiInsight): Promise<AiInsight>;
 }
@@ -100,9 +105,24 @@ export class DrizzleStorage implements IStorage {
     return result[0];
   }
 
+  // New user management methods implementation
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(schema.users);
+  }
+
+  async updateUserRole(userId: string, role: string): Promise<User | undefined> {
+    const result = await db
+      .update(schema.users)
+      .set({ role: role as any, updatedAt: new Date() })
+      .where(eq(schema.users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+
   async getClients(filters?: { search?: string; status?: string; industry?: string; assignedCsmId?: string }): Promise<Client[]> {
     let query = db.select().from(schema.clients);
-    
+
     const conditions = [];
     if (filters?.search) {
       conditions.push(
@@ -155,7 +175,7 @@ export class DrizzleStorage implements IStorage {
 
   async getServices(filters?: { search?: string; clientId?: string; serviceType?: string; currency?: string }): Promise<Service[]> {
     let query = db.select().from(schema.services);
-    
+
     const conditions = [];
     if (filters?.search) {
       conditions.push(like(schema.services.description, `%${filters.search}%`));
@@ -202,7 +222,7 @@ export class DrizzleStorage implements IStorage {
 
   async getAgreements(filters?: { search?: string; clientId?: string; status?: string }): Promise<Agreement[]> {
     let query = db.select().from(schema.agreements);
-    
+
     const conditions = [];
     if (filters?.search) {
       conditions.push(like(schema.agreements.agreementName, `%${filters.search}%`));
@@ -246,7 +266,7 @@ export class DrizzleStorage implements IStorage {
 
   async getInvoices(filters?: { clientId?: string; status?: string; currency?: string; period?: string }): Promise<Invoice[]> {
     let query = db.select().from(schema.invoices);
-    
+
     const conditions = [];
     if (filters?.clientId) {
       conditions.push(eq(schema.invoices.clientId, filters.clientId));
@@ -257,7 +277,7 @@ export class DrizzleStorage implements IStorage {
     if (filters?.currency && filters.currency !== "all") {
       conditions.push(eq(schema.invoices.currency, filters.currency as any));
     }
-    
+
     if (filters?.period && filters.period !== "all") {
       const now = new Date();
       const periodConditions = this.getPeriodConditions(filters.period, now);
@@ -322,7 +342,7 @@ export class DrizzleStorage implements IStorage {
 
   async getNotifications(filters?: { userId?: string; isRead?: boolean }): Promise<Notification[]> {
     let query = db.select().from(schema.notifications);
-    
+
     const conditions = [];
     if (filters?.userId) {
       conditions.push(eq(schema.notifications.userId, filters.userId));
@@ -353,7 +373,7 @@ export class DrizzleStorage implements IStorage {
 
   async getAiInsights(filters?: { clientId?: string; insightType?: string }): Promise<AiInsight[]> {
     let query = db.select().from(schema.aiInsights);
-    
+
     const conditions = [];
     if (filters?.clientId) {
       conditions.push(eq(schema.aiInsights.clientId, filters.clientId));
