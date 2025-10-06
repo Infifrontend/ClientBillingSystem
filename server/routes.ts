@@ -378,7 +378,14 @@ export function registerRoutes(app: Express) {
   app.post("/api/agreements", isAuthenticated, async (req: Request, res: Response) => {
     
     try {
-      const validatedData = insertAgreementSchema.parse(req.body);
+      // Convert date strings to Date objects
+      const agreementData = {
+        ...req.body,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+      };
+      
+      const validatedData = insertAgreementSchema.parse(agreementData);
       const agreement = await storage.createAgreement(validatedData);
       
       // Create notifications for CSM and Finance about new agreement

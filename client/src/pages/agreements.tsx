@@ -33,7 +33,22 @@ export default function Agreements() {
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: agreements, isLoading: agreementsLoading } = useQuery<any>({
-    queryKey: ["/api/agreements", { search: searchTerm, status: statusFilter }],
+    queryKey: ["/api/agreements", searchTerm, statusFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
+      
+      const response = await fetch(`/api/agreements?${params.toString()}`, {
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch agreements");
+      }
+      
+      return response.json();
+    },
   });
 
   if (isLoading || !isAuthenticated) {
