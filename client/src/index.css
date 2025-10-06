@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -78,10 +78,10 @@
   --chart-4: 38 92% 50%;
   --chart-5: 199 89% 48%;
 
-  --font-sans: Inter, sans-serif;
+  --font-sans: Roboto, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
-  --font-display: Montserrat, sans-serif;
+  --font-display: Roboto, sans-serif;
   --radius: .5rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(214 20% 88% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(214 20% 88% / 0.00);
