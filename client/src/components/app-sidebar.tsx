@@ -1,0 +1,177 @@
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  DollarSign,
+  BarChart3,
+  Bell,
+  Settings,
+  LogOut,
+  Briefcase,
+  TrendingUp,
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+
+const menuItems = [
+  {
+    title: "Dashboard",
+    url: "/",
+    icon: LayoutDashboard,
+    testId: "sidebar-dashboard",
+  },
+  {
+    title: "Clients",
+    url: "/clients",
+    icon: Users,
+    testId: "sidebar-clients",
+  },
+  {
+    title: "Services & Billing",
+    url: "/services",
+    icon: DollarSign,
+    testId: "sidebar-services",
+  },
+  {
+    title: "Agreements",
+    url: "/agreements",
+    icon: FileText,
+    testId: "sidebar-agreements",
+  },
+  {
+    title: "Reports",
+    url: "/reports",
+    icon: BarChart3,
+    testId: "sidebar-reports",
+  },
+  {
+    title: "AI Insights",
+    url: "/insights",
+    icon: TrendingUp,
+    testId: "sidebar-insights",
+  },
+];
+
+export function AppSidebar() {
+  const [location] = useLocation();
+  const { user } = useAuth();
+
+  return (
+    <Sidebar data-testid="sidebar">
+      <SidebarHeader className="p-6 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
+            <Briefcase className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold font-display">Infiniti CMS</h2>
+            <p className="text-xs text-muted-foreground">Client Management</p>
+          </div>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => {
+                const isActive = item.url === "/" 
+                  ? location === "/" 
+                  : location.startsWith(item.url);
+                
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={isActive ? "bg-sidebar-accent" : ""}
+                      data-testid={item.testId}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>System</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild data-testid="sidebar-notifications">
+                  <Link href="/notifications">
+                    <Bell className="h-4 w-4" />
+                    <span>Notifications</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {(user?.role === "admin" || user?.role === "manager") && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild data-testid="sidebar-settings">
+                    <Link href="/settings">
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <div className="flex items-center gap-3 mb-3">
+          {user?.profileImageUrl ? (
+            <img
+              src={user.profileImageUrl}
+              alt={`${user.firstName} ${user.lastName}`}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-sm font-medium">
+                {user?.firstName?.[0]}{user?.lastName?.[0]}
+              </span>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate" data-testid="user-name">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => window.location.href = "/api/logout"}
+          data-testid="button-logout"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
