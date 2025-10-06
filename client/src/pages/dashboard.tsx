@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { UrgentCasesBanner } from "@/components/urgent-cases-banner";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -35,6 +36,8 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Dashboard</h1>
         <p className="text-muted-foreground">Overview of your client management and billing operations</p>
       </div>
+
+      <UrgentCasesBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard

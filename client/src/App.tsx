@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { NotificationBell } from "@/components/notification-bell";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ClientsList from "@/pages/clients/index";
@@ -32,8 +33,11 @@ function AuthenticatedRoutes() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b bg-card">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
-            <div className="text-sm text-muted-foreground">
-              Infiniti Software Solutions
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              <div className="text-sm text-muted-foreground">
+                Infiniti Software Solutions
+              </div>
             </div>
           </header>
           <main className="flex-1 overflow-auto p-6 bg-background">

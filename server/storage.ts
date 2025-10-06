@@ -63,9 +63,11 @@ export interface IStorage {
   updateInvoice(id: string, updates: Partial<InsertInvoice>): Promise<Invoice | undefined>;
   deleteInvoice(id: string): Promise<boolean>;
 
-  getNotifications(filters?: { userId?: string; isRead?: boolean }): Promise<Notification[]>;
-  createNotification(notification: InsertNotification): Promise<Notification>;
-  markNotificationRead(id: string): Promise<boolean>;
+  getNotifications(userId?: string, unreadOnly?: boolean): Promise<Notification[]>;
+  createNotification(data: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: string): Promise<Notification | null>;
+  markAllNotificationsAsRead(userId: string): Promise<boolean>;
+
 
   getAiInsights(filters?: { clientId?: string; insightType?: string }): Promise<AiInsight[]>;
   createAiInsight(insight: InsertAiInsight): Promise<AiInsight>;
@@ -171,8 +173,13 @@ export class DrizzleStorage implements IStorage {
   }
 
   async deleteClient(id: string): Promise<boolean> {
-    const result = await db.delete(schema.clients).where(eq(schema.clients.id, id)).returning();
-    return result.length > 0;
+    try {
+      const result = await db.delete(schema.clients).where(eq(schema.clients.id, id));
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      return false;
+    }
   }
 
   async getServices(filters?: { search?: string; clientId?: string; serviceType?: string; currency?: string }): Promise<Service[]> {
@@ -342,35 +349,60 @@ export class DrizzleStorage implements IStorage {
     return result.length > 0;
   }
 
-  async getNotifications(filters?: { userId?: string; isRead?: boolean }): Promise<Notification[]> {
-    let query = db.select().from(schema.notifications);
+  async getNotifications(userId?: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    try {
+      let query = db.select().from(schema.notifications);
 
-    const conditions = [];
-    if (filters?.userId) {
-      conditions.push(eq(schema.notifications.userId, filters.userId));
-    }
-    if (filters?.isRead !== undefined) {
-      conditions.push(eq(schema.notifications.isRead, filters.isRead));
-    }
+      const conditions = [];
+      if (userId) {
+        conditions.push(eq(schema.notifications.userId, userId));
+      }
+      if (unreadOnly) {
+        conditions.push(eq(schema.notifications.isRead, false));
+      }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
-    }
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as any;
+      }
 
-    return await query.orderBy(desc(schema.notifications.createdAt));
+      const result = await query.orderBy(desc(schema.notifications.createdAt));
+      return result;
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
   }
 
-  async createNotification(notification: InsertNotification): Promise<Notification> {
-    const result = await db.insert(schema.notifications).values(notification).returning();
-    return result[0];
+  async createNotification(data: InsertNotification): Promise<Notification> {
+    const [notification] = await db.insert(schema.notifications).values(data).returning();
+    return notification;
   }
 
-  async markNotificationRead(id: string): Promise<boolean> {
-    const result = await db.update(schema.notifications)
-      .set({ isRead: true })
-      .where(eq(schema.notifications.id, id))
-      .returning();
-    return result.length > 0;
+  async markNotificationAsRead(id: string): Promise<Notification | null> {
+    try {
+      const [notification] = await db
+        .update(schema.notifications)
+        .set({ isRead: true })
+        .where(eq(schema.notifications.id, id))
+        .returning();
+      return notification || null;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      return null;
+    }
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<boolean> {
+    try {
+      await db
+        .update(schema.notifications)
+        .set({ isRead: true })
+        .where(eq(schema.notifications.userId, userId));
+      return true;
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      return false;
+    }
   }
 
   async getAiInsights(filters?: { clientId?: string; insightType?: string }): Promise<AiInsight[]> {

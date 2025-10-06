@@ -602,4 +602,113 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: error.message });
     }
   });
+
+  app.get("/api/notifications", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.claims.sub;
+      const { unreadOnly } = req.query;
+      
+      const notifications = await storage.getNotifications(userId, unreadOnly === "true");
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/notifications/:id/read", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const notification = await storage.markNotificationAsRead(req.params.id);
+      if (!notification) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+      res.json(notification);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/notifications/mark-all-read", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.claims.sub;
+      await storage.markAllNotificationsAsRead(userId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/notifications/urgent", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const now = new Date();
+      const invoices = await storage.getInvoices({ status: "overdue" });
+      const agreements = await storage.getAgreements();
+      const clients = await storage.getClients();
+      
+      const urgentCases = [];
+      
+      // Overdue invoices at 15, 30, 45 days
+      for (const invoice of invoices) {
+        const daysOverdue = Math.floor(
+          (now.getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (daysOverdue >= 15) {
+          const client = clients.find(c => c.id === invoice.clientId);
+          let severity = "medium";
+          if (daysOverdue >= 45) severity = "critical";
+          else if (daysOverdue >= 30) severity = "high";
+          
+          urgentCases.push({
+            id: `invoice-${invoice.id}`,
+            type: "overdue_payment",
+            severity,
+            title: `Invoice ${invoice.invoiceNumber} Overdue`,
+            message: `${client?.name || "Unknown Client"} - ${daysOverdue} days overdue - ${invoice.currency} ${invoice.amount}`,
+            clientId: invoice.clientId,
+            clientName: client?.name || "Unknown",
+            relatedEntityId: invoice.id,
+            daysOverdue,
+            amount: invoice.amount,
+            currency: invoice.currency,
+          });
+        }
+      }
+      
+      // Agreement renewals at 2 months, 1 month, 2 weeks
+      for (const agreement of agreements) {
+        const daysUntilExpiry = Math.floor(
+          (new Date(agreement.endDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (daysUntilExpiry <= 60 && daysUntilExpiry > 0) {
+          const client = clients.find(c => c.id === agreement.clientId);
+          let severity = "low";
+          if (daysUntilExpiry <= 14) severity = "high";
+          else if (daysUntilExpiry <= 30) severity = "medium";
+          
+          urgentCases.push({
+            id: `agreement-${agreement.id}`,
+            type: "agreement_renewal",
+            severity,
+            title: `Agreement Renewal Due Soon`,
+            message: `${client?.name || "Unknown Client"} - ${agreement.agreementName} expires in ${daysUntilExpiry} days`,
+            clientId: agreement.clientId,
+            clientName: client?.name || "Unknown",
+            relatedEntityId: agreement.id,
+            daysUntilExpiry,
+            agreementName: agreement.agreementName,
+          });
+        }
+      }
+      
+      urgentCases.sort((a, b) => {
+        const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+        return severityOrder[a.severity] - severityOrder[b.severity];
+      });
+      
+      res.json(urgentCases);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 }
