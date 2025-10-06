@@ -514,6 +514,7 @@ export default function Reports() {
                 Clear Filters
               </Button>
             </div>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
