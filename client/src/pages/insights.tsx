@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PageHeader } from "@/components/page-header";
 import { TrendingUp, AlertTriangle, Target, Brain, IndianRupee, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
@@ -39,12 +38,11 @@ export default function Insights() {
   }
 
   return (
-    <div className="space-y-0">
-      <PageHeader 
-        title="AI Insights" 
-        subtitle="Revenue forecasting, client health & risk analysis powered by AI/ML"
-      />
-      <div className="p-6 space-y-6">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">AI Insights</h1>
+        <p className="text-muted-foreground">Revenue forecasting, client health & risk analysis powered by AI/ML</p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-chart-3/10 to-chart-3/5 border-chart-3/20">
@@ -218,7 +216,6 @@ export default function Insights() {
           </div>
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }

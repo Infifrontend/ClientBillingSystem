@@ -35,8 +35,7 @@ export default function Dashboard() {
     <div className="space-y-0">
       <PageHeader 
         title="Dashboard" 
-        subtitle="Real-time overview of your airline offer performance"
-        showFilters={true}
+        subtitle="Overview of your client management and billing operations" 
       />
       <div className="p-6 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

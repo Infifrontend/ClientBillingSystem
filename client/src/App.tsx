@@ -31,7 +31,16 @@ function AuthenticatedRoutes() {
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <main className="flex-1 overflow-auto bg-background">
+          <header className="flex items-center justify-between p-4 border-b bg-card">
+            <SidebarTrigger data-testid="button-sidebar-toggle" />
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              <div className="text-sm text-muted-foreground">
+                Infiniti Software Solutions
+              </div>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto p-6 bg-background">
             <Switch>
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/clients" component={ClientsList} />

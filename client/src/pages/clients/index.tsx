@@ -13,7 +13,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, Search, Users, Building2, Mail, Phone, MapPin, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { PageHeader } from "@/components/page-header";
 import type { Client } from "@shared/schema";
 
 export default function ClientsList() {
@@ -98,13 +97,12 @@ export default function ClientsList() {
   }
 
   return (
-    <div className="space-y-0">
-      <PageHeader 
-        title="Clients" 
-        subtitle="Manage your client portfolio"
-      />
-      <div className="p-6 space-y-6">
-      <div className="flex items-center justify-end">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Clients</h1>
+          <p className="text-muted-foreground">Manage your client portfolio</p>
+        </div>
         <Link href="/clients/new">
           <Button data-testid="button-add-client">
             <Plus className="h-4 w-4 mr-2" />
@@ -380,7 +378,6 @@ export default function ClientsList() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </div>
   );
 }

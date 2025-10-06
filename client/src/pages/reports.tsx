@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { PageHeader } from "@/components/page-header";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { Client, Invoice, Service } from "@shared/schema";
@@ -344,12 +343,13 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-0">
-      <PageHeader 
-        title="Reports" 
-        subtitle="Financial analytics and outstanding invoices"
-      />
-      <div className="p-6 space-y-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Reports</h1>
+          <p className="text-muted-foreground">Financial analytics and outstanding invoices</p>
+        </div>
+      </div>
 
       <Card className="border-2 shadow-sm">
         <CardHeader className="pb-5">
@@ -620,7 +620,6 @@ export default function Reports() {
           </Card>
         </TabsContent>
       </Tabs>
-      </div>
     </div>
   );
 }

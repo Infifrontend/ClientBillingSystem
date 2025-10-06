@@ -13,7 +13,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Search, FileText, Calendar, DollarSign, AlertCircle, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
 import { AgreementFormDialog } from "@/components/agreement-form-dialog";
-import { PageHeader } from "@/components/page-header";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Agreement } from "@shared/schema";
 
@@ -136,13 +135,12 @@ export default function Agreements() {
   };
 
   return (
-    <div className="space-y-0">
-      <PageHeader 
-        title="Agreements" 
-        subtitle="Manage client contracts and renewals"
-      />
-      <div className="p-6 space-y-6">
-      <div className="flex items-center justify-end">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Agreements</h1>
+          <p className="text-muted-foreground">Manage client contracts and renewals</p>
+        </div>
         <Button data-testid="button-add-agreement" onClick={() => setIsDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Agreement
@@ -449,7 +447,6 @@ export default function Agreements() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </div>
   );
 }
