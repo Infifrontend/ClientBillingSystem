@@ -1,30 +1,30 @@
+
 import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
-import { isAuthenticated } from "./replitAuth";
 import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
 import { log } from "./vite";
 
+// Simple mock user for development - replace with your own auth logic
+const mockUser = {
+  id: "45703559",
+  email: "admin@example.com",
+  firstName: "Admin",
+  lastName: "User",
+  role: "admin" as const,
+};
 
 export function registerRoutes(app: Express) {
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/auth/user", async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      if (user) {
-        req.user.role = user.role;
-        res.json(user);
-      } else {
-        res.status(404).json({ error: "User not found" });
-      }
+      res.json(mockUser);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-
-  app.get("/api/users", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
+  app.get("/api/users", requireRole("admin"), async (req: Request, res: Response) => {
     try {
       const users = await storage.getUsers();
       res.json(users);
@@ -33,7 +33,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/users", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
+  app.post("/api/users", requireRole("admin"), async (req: Request, res: Response) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
       const user = await storage.createUser(validatedData);
@@ -46,7 +46,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/users/:id/role", isAuthenticated, requireRole("admin"), async (req: Request, res: Response) => {
+  app.patch("/api/users/:id/role", requireRole("admin"), async (req: Request, res: Response) => {
     try {
       const { role } = req.body;
       const user = await storage.updateUserRole(req.params.id, role);
@@ -59,8 +59,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/dashboard/stats", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/dashboard/stats", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
       
@@ -105,13 +104,11 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/dashboard/revenue-trends", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/dashboard/revenue-trends", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
       
-      // If a specific client is selected, adjust the revenue data accordingly
       const baseRevenue = clientId && clientId !== "all" ? 20000 : 50000;
       const multiplier = clientId && clientId !== "all" ? 0.4 : 1;
       
@@ -126,8 +123,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/dashboard/client-distribution", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/dashboard/client-distribution", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
       
@@ -152,8 +148,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/dashboard/upcoming-renewals", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/dashboard/upcoming-renewals", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
       
@@ -192,13 +187,9 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/clients", isAuthenticated, requirePermission("clients:read"), async (req: AuthenticatedRequest, res: Response) => {
+  app.get("/api/clients", requirePermission("clients:read"), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { search, status, industry } = req.query;
-      const userId = req.user?.claims.sub;
-      const userRole = req.user?.role;
-
-      console.log('[DEBUG] Fetching clients for user:', userId, 'with role:', userRole);
 
       let clients = await storage.getClients({
         search: search as string,
@@ -206,15 +197,6 @@ export function registerRoutes(app: Express) {
         industry: industry as string,
       });
 
-      console.log('[DEBUG] Total clients fetched from DB:', clients.length);
-
-      // Temporarily disabled CSM filtering for testing
-      // if (userRole === "csm") {
-      //   clients = clients.filter(client => client.assignedCsmId === userId);
-      //   console.log('[DEBUG] Filtered clients for CSM:', clients.length);
-      // }
-
-      console.log('[DEBUG] Returning clients:', clients.length);
       res.json(clients);
     } catch (error: any) {
       console.error('[ERROR] Failed to fetch clients:', error);
@@ -222,24 +204,12 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/clients/:id", isAuthenticated, requirePermission("clients:read"), async (req: AuthenticatedRequest, res: Response) => {
+  app.get("/api/clients/:id", requirePermission("clients:read"), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const client = await storage.getClient(req.params.id);
       if (!client) {
         return res.status(404).json({ error: "Client not found" });
       }
-
-      const userRole = req.user?.role;
-      const userId = req.user?.claims.sub;
-
-      console.log('[DEBUG] Fetching client:', req.params.id, 'for user:', userId, 'with role:', userRole);
-      console.log('[DEBUG] Client assignedCsmId:', client.assignedCsmId);
-
-      // Temporarily disabled CSM filtering for testing
-      // if (userRole === "csm" && client.assignedCsmId !== userId) {
-      //   console.log('[DEBUG] Access denied - CSM not assigned to this client');
-      //   return res.status(403).json({ error: "Access denied" });
-      // }
 
       res.json(client);
     } catch (error: any) {
@@ -248,15 +218,12 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/clients", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
+  app.post("/api/clients", requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
-      console.log('[DEBUG] Creating client with data:', req.body);
       const validatedData = insertClientSchema.parse(req.body);
       const client = await storage.createClient(validatedData);
-      console.log('[DEBUG] Client created successfully:', client.id);
       res.json(client);
     } catch (error: any) {
-      console.error('[ERROR] Failed to create client:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -264,27 +231,20 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/clients/:id", isAuthenticated, requirePermission("clients:write"), async (req: Request, res: Response) => {
+  app.patch("/api/clients/:id", requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
-      console.log('[DEBUG] Updating client:', req.params.id, 'with data:', req.body);
-
-      // Check if client exists first
       const existingClient = await storage.getClient(req.params.id);
       if (!existingClient) {
-        console.log('[DEBUG] Client not found for update:', req.params.id);
         return res.status(404).json({ error: "Client not found" });
       }
 
       const client = await storage.updateClient(req.params.id, req.body);
       if (!client) {
-        console.log('[DEBUG] Failed to update client:', req.params.id);
         return res.status(500).json({ error: "Failed to update client" });
       }
 
-      console.log('[DEBUG] Client updated successfully:', client.id);
       res.json(client);
     } catch (error: any) {
-      console.error('[ERROR] Update client error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -292,31 +252,25 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/clients/:id", isAuthenticated, requirePermission("clients:delete"), async (req: Request, res: Response) => {
+  app.delete("/api/clients/:id", requirePermission("clients:delete"), async (req: Request, res: Response) => {
     try {
-      console.log('[DEBUG] Deleting client:', req.params.id);
       const client = await storage.getClient(req.params.id);
       if (!client) {
-        console.log('[DEBUG] Client not found:', req.params.id);
         return res.status(404).json({ error: "Client not found" });
       }
 
       const success = await storage.deleteClient(req.params.id);
       if (!success) {
-        console.log('[DEBUG] Failed to delete client:', req.params.id);
         return res.status(500).json({ error: "Failed to delete client" });
       }
 
-      console.log('[DEBUG] Client deleted successfully:', req.params.id);
       res.json({ success: true, message: "Client deleted successfully" });
     } catch (error: any) {
-      console.error('[ERROR] Delete client error:', error);
       res.status(500).json({ error: error.message });
     }
   });
 
-  app.get("/api/services", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/services", async (req: Request, res: Response) => {
     try {
       const { search, clientId, serviceType, currency } = req.query;
       const services = await storage.getServices({
@@ -327,7 +281,6 @@ export function registerRoutes(app: Express) {
       });
 
       const clients = await storage.getClients();
-
       const users = await storage.getUsers();
       const servicesWithClients = services.map(service => {
         const client = clients.find(c => c.id === service.clientId);
@@ -354,10 +307,8 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/services", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.post("/api/services", async (req: Request, res: Response) => {
     try {
-      // Convert date strings to Date objects
       const serviceData = {
         ...req.body,
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
@@ -375,9 +326,8 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/services/:id", isAuthenticated, async (req: Request, res: Response) => {
+  app.patch("/api/services/:id", async (req: Request, res: Response) => {
     try {
-      // Convert date strings to Date objects
       const serviceData = {
         ...req.body,
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
@@ -397,7 +347,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/services/:id", isAuthenticated, async (req: Request, res: Response) => {
+  app.delete("/api/services/:id", async (req: Request, res: Response) => {
     try {
       const deleted = await storage.deleteService(req.params.id);
       if (!deleted) {
@@ -410,8 +360,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/agreements", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/agreements", async (req: Request, res: Response) => {
     try {
       const { search, clientId, status } = req.query;
       const agreements = await storage.getAgreements({
@@ -421,7 +370,6 @@ export function registerRoutes(app: Express) {
       });
 
       const clients = await storage.getClients();
-
       const agreementsWithClients = agreements.map(agreement => {
         const client = clients.find(c => c.id === agreement.clientId);
         return {
@@ -448,10 +396,8 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.post("/api/agreements", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.post("/api/agreements", async (req: Request, res: Response) => {
     try {
-      // Convert date strings to Date objects
       const agreementData = {
         ...req.body,
         startDate: new Date(req.body.startDate),
@@ -461,10 +407,8 @@ export function registerRoutes(app: Express) {
       const validatedData = insertAgreementSchema.parse(agreementData);
       const agreement = await storage.createAgreement(validatedData);
 
-      // Create notifications for CSM and Finance about new agreement
       const client = await storage.getClient(agreement.clientId);
 
-      // Notify CSM (if assigned)
       if (client?.assignedCsmId) {
         await storage.createNotification({
           userId: client.assignedCsmId,
@@ -476,7 +420,6 @@ export function registerRoutes(app: Express) {
         });
       }
 
-      // Notify Finance users
       const users = await storage.getUsers();
       const financeUsers = users.filter(u => u.role === "finance" || u.role === "admin");
 
@@ -500,14 +443,13 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.put("/api/agreements/:id", isAuthenticated, async (req: Request, res: Response) => {
+  app.put("/api/agreements/:id", async (req: Request, res: Response) => {
     try {
       const agreement = await storage.getAgreement(req.params.id);
       if (!agreement) {
         return res.status(404).json({ error: "Agreement not found" });
       }
 
-      // Convert date strings to Date objects
       const agreementData = {
         ...req.body,
         startDate: new Date(req.body.startDate),
@@ -524,22 +466,18 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/agreements/:id", isAuthenticated, async (req: Request, res: Response) => {
+  app.delete("/api/agreements/:id", async (req: Request, res: Response) => {
     try {
-      console.log('[DEBUG] Deleting agreement:', req.params.id);
       const agreement = await storage.getAgreement(req.params.id);
       if (!agreement) {
-        console.log('[DEBUG] Agreement not found:', req.params.id);
         return res.status(404).json({ error: "Agreement not found" });
       }
 
       const success = await storage.deleteAgreement(req.params.id);
       if (!success) {
-        console.log('[DEBUG] Failed to delete agreement:', req.params.id);
         return res.status(500).json({ error: "Failed to delete agreement" });
       }
 
-      console.log('[DEBUG] Agreement deleted successfully:', req.params.id);
       res.json({ success: true, message: "Agreement deleted successfully" });
     } catch (error: any) {
       console.error('[ERROR] Delete agreement error:', error);
@@ -547,8 +485,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/reports/outstanding", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/reports/outstanding", async (req: Request, res: Response) => {
     try {
       const { currency, period } = req.query;
       const invoices = await storage.getInvoices({
@@ -589,8 +526,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/reports/revenue", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/reports/revenue", async (req: Request, res: Response) => {
     try {
       const { currency, period } = req.query;
       const invoices = await storage.getInvoices({
@@ -642,8 +578,7 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/insights", isAuthenticated, async (req: Request, res: Response) => {
-
+  app.get("/api/insights", async (req: Request, res: Response) => {
     try {
       const clients = await storage.getClients();
       const services = await storage.getServices();
@@ -723,19 +658,17 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/notifications", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.get("/api/notifications", async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const userId = req.user?.claims.sub;
       const { unreadOnly } = req.query;
-
-      const notifications = await storage.getNotifications(userId, unreadOnly === "true");
+      const notifications = await storage.getNotifications(mockUser.id, unreadOnly === "true");
       res.json(notifications);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  app.patch("/api/notifications/:id/read", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.patch("/api/notifications/:id/read", async (req: AuthenticatedRequest, res: Response) => {
     try {
       const notification = await storage.markNotificationAsRead(req.params.id);
       if (!notification) {
@@ -747,17 +680,16 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/notifications/mark-all-read", isAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  app.patch("/api/notifications/mark-all-read", async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const userId = req.user?.claims.sub;
-      await storage.markAllNotificationsAsRead(userId);
+      await storage.markAllNotificationsAsRead(mockUser.id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  app.get("/api/notifications/urgent", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/notifications/urgent", async (req: Request, res: Response) => {
     try {
       const now = new Date();
       const invoices = await storage.getInvoices({ status: "overdue" });
@@ -766,7 +698,6 @@ export function registerRoutes(app: Express) {
 
       const urgentCases = [];
 
-      // Overdue invoices at 15, 30, 45 days
       for (const invoice of invoices) {
         const daysOverdue = Math.floor(
           (now.getTime() - new Date(invoice.dueDate).getTime()) / (1000 * 60 * 60 * 24)
@@ -794,7 +725,6 @@ export function registerRoutes(app: Express) {
         }
       }
 
-      // Agreement renewals at 2 months, 1 month, 2 weeks
       for (const agreement of agreements) {
         const daysUntilExpiry = Math.floor(
           (new Date(agreement.endDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
