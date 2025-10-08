@@ -9,24 +9,68 @@ import { Link } from "wouter";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { UrgentCasesBanner } from "@/components/urgent-cases-banner";
 import { PageHeader } from "@/components/page-header";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import type { Client } from "@shared/schema";
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const [selectedClientId, setSelectedClientId] = useState<string>("all");
+
+  const { data: clients } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+  });
 
   const { data: stats } = useQuery<any>({
-    queryKey: ["/api/dashboard/stats"],
+    queryKey: ["/api/dashboard/stats", selectedClientId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedClientId && selectedClientId !== "all") {
+        params.append("clientId", selectedClientId);
+      }
+      const response = await fetch(`/api/dashboard/stats?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      return response.json();
+    },
   });
 
   const { data: revenueData } = useQuery<any>({
-    queryKey: ["/api/dashboard/revenue-trends"],
+    queryKey: ["/api/dashboard/revenue-trends", selectedClientId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedClientId && selectedClientId !== "all") {
+        params.append("clientId", selectedClientId);
+      }
+      const response = await fetch(`/api/dashboard/revenue-trends?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch revenue trends");
+      return response.json();
+    },
   });
 
   const { data: clientDistribution } = useQuery<any>({
-    queryKey: ["/api/dashboard/client-distribution"],
+    queryKey: ["/api/dashboard/client-distribution", selectedClientId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedClientId && selectedClientId !== "all") {
+        params.append("clientId", selectedClientId);
+      }
+      const response = await fetch(`/api/dashboard/client-distribution?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch client distribution");
+      return response.json();
+    },
   });
 
   const { data: upcomingRenewals } = useQuery<any>({
-    queryKey: ["/api/dashboard/upcoming-renewals"],
+    queryKey: ["/api/dashboard/upcoming-renewals", selectedClientId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedClientId && selectedClientId !== "all") {
+        params.append("clientId", selectedClientId);
+      }
+      const response = await fetch(`/api/dashboard/upcoming-renewals?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch upcoming renewals");
+      return response.json();
+    },
   });
 
   const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -38,6 +82,28 @@ export default function Dashboard() {
         subtitle="Overview of your client management and billing operations" 
       />
       <div className="p-6 space-y-8">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Filter by Client</label>
+                <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                  <SelectTrigger className="w-full md:w-[300px]">
+                    <SelectValue placeholder="All Clients" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Clients</SelectItem>
+                    {clients?.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Total Clients"

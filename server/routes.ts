@@ -62,9 +62,20 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/stats", isAuthenticated, async (req: Request, res: Response) => {
 
     try {
-      const clients = await storage.getClients();
-      const agreements = await storage.getAgreements({ status: "active" });
-      const invoices = await storage.getInvoices();
+      const { clientId } = req.query;
+      
+      const clients = clientId && clientId !== "all" 
+        ? [await storage.getClient(clientId as string)].filter(Boolean)
+        : await storage.getClients();
+      
+      const agreements = await storage.getAgreements({ 
+        status: "active",
+        ...(clientId && clientId !== "all" ? { clientId: clientId as string } : {})
+      });
+      
+      const invoices = await storage.getInvoices(
+        clientId && clientId !== "all" ? { clientId: clientId as string } : {}
+      );
 
       const now = new Date();
       const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -97,10 +108,16 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/revenue-trends", isAuthenticated, async (req: Request, res: Response) => {
 
     try {
+      const { clientId } = req.query;
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+      
+      // If a specific client is selected, adjust the revenue data accordingly
+      const baseRevenue = clientId && clientId !== "all" ? 20000 : 50000;
+      const multiplier = clientId && clientId !== "all" ? 0.4 : 1;
+      
       const data = months.map((month, index) => ({
         month,
-        revenue: 50000 + (index * 8000) + (Math.random() * 10000),
+        revenue: baseRevenue + (index * 8000 * multiplier) + (Math.random() * 10000 * multiplier),
       }));
 
       res.json(data);
@@ -112,7 +129,12 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/client-distribution", isAuthenticated, async (req: Request, res: Response) => {
 
     try {
-      const clients = await storage.getClients();
+      const { clientId } = req.query;
+      
+      const clients = clientId && clientId !== "all"
+        ? [await storage.getClient(clientId as string)].filter(Boolean)
+        : await storage.getClients();
+      
       const distribution = clients.reduce((acc: any, client) => {
         const industry = client.industry.replace(/_/g, ' ');
         acc[industry] = (acc[industry] || 0) + 1;
@@ -133,7 +155,11 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/upcoming-renewals", isAuthenticated, async (req: Request, res: Response) => {
 
     try {
-      const agreements = await storage.getAgreements();
+      const { clientId } = req.query;
+      
+      const agreements = await storage.getAgreements(
+        clientId && clientId !== "all" ? { clientId: clientId as string } : {}
+      );
       const clients = await storage.getClients();
 
       const now = new Date();
