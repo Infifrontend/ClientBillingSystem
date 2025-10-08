@@ -1,4 +1,3 @@
-
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,25 +32,6 @@ export function PageHeader({ title, subtitle }: PageHeaderProps) {
               <SelectItem value="90days">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="All Channels" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Channels</SelectItem>
-              <SelectItem value="web">Web</SelectItem>
-              <SelectItem value="mobile">Mobile</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="default" className="bg-primary hover:bg-primary/90">
-            Refresh
-          </Button>
-
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
         </div>
       </div>
     </div>
