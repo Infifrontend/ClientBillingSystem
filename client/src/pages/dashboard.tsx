@@ -82,28 +82,24 @@ export default function Dashboard() {
         subtitle="Overview of your client management and billing operations" 
       />
       <div className="p-6 space-y-8">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Filter by Client</label>
-                <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                  <SelectTrigger className="w-full md:w-[300px]">
-                    <SelectValue placeholder="All Clients" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Clients</SelectItem>
-                    {clients?.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-2 block">Filter by Client</label>
+            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <SelectTrigger className="w-full md:w-[300px]">
+                <SelectValue placeholder="All Clients" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Clients</SelectItem>
+                {clients?.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Total Clients"
