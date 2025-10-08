@@ -1,4 +1,3 @@
-
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,26 +32,28 @@ export function PageHeader({ title, subtitle }: PageHeaderProps) {
               <SelectItem value="90days">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
+
           
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="All Channels" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Channels</SelectItem>
-              <SelectItem value="web">Web</SelectItem>
-              <SelectItem value="mobile">Mobile</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="default" className="bg-primary hover:bg-primary/90">
-            Refresh
-          </Button>
-
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
         </div>
+        <div className="p-6 space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-2 block">Filter by Client</label>
+              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                <SelectTrigger className="w-full md:w-[300px]">
+                  <SelectValue placeholder="All Clients" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clients</SelectItem>
+                  {clients?.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
       </div>
     </div>
   );
