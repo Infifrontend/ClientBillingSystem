@@ -107,14 +107,40 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/revenue-trends", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
       
-      const baseRevenue = clientId && clientId !== "all" ? 20000 : 50000;
-      const multiplier = clientId && clientId !== "all" ? 0.4 : 1;
+      const invoices = await storage.getInvoices(
+        clientId && clientId !== "all" ? { clientId: clientId as string } : {}
+      );
+
+      // Get last 6 months
+      const now = new Date();
+      const monthsData: { [key: string]: number } = {};
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       
-      const data = months.map((month, index) => ({
+      // Initialize last 6 months with zero revenue
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = `${monthNames[date.getMonth()]}`;
+        monthsData[monthKey] = 0;
+      }
+
+      // Aggregate revenue by month from paid invoices
+      invoices
+        .filter(inv => inv.status === "paid" && inv.paidDate)
+        .forEach(inv => {
+          const paidDate = new Date(inv.paidDate!);
+          const monthKey = `${monthNames[paidDate.getMonth()]}`;
+          
+          // Only include if within last 6 months
+          const monthsDiff = (now.getFullYear() - paidDate.getFullYear()) * 12 + (now.getMonth() - paidDate.getMonth());
+          if (monthsDiff >= 0 && monthsDiff < 6 && monthsData.hasOwnProperty(monthKey)) {
+            monthsData[monthKey] += Number(inv.amount);
+          }
+        });
+
+      const data = Object.entries(monthsData).map(([month, revenue]) => ({
         month,
-        revenue: baseRevenue + (index * 8000 * multiplier) + (Math.random() * 10000 * multiplier),
+        revenue: Math.round(revenue),
       }));
 
       res.json(data);
@@ -132,7 +158,10 @@ export function registerRoutes(app: Express) {
         : await storage.getClients();
       
       const distribution = clients.reduce((acc: any, client) => {
-        const industry = client.industry.replace(/_/g, ' ');
+        const industry = client.industry.replace(/_/g, ' ')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
         acc[industry] = (acc[industry] || 0) + 1;
         return acc;
       }, {});
