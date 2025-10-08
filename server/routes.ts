@@ -431,6 +431,9 @@ export function registerRoutes(app: Express) {
         ...req.body,
         startDate: new Date(req.body.startDate),
         endDate: new Date(req.body.endDate),
+        implementFees: req.body.implementFees || null,
+        monthlySubscriptionFees: req.body.monthlySubscriptionFees || null,
+        changeRequestFees: req.body.changeRequestFees || null,
       };
 
       const validatedData = insertAgreementSchema.parse(agreementData);
@@ -483,6 +486,9 @@ export function registerRoutes(app: Express) {
         ...req.body,
         startDate: new Date(req.body.startDate),
         endDate: new Date(req.body.endDate),
+        implementFees: req.body.implementFees || null,
+        monthlySubscriptionFees: req.body.monthlySubscriptionFees || null,
+        changeRequestFees: req.body.changeRequestFees || null,
       };
 
       const validatedData = insertAgreementSchema.parse(agreementData);
