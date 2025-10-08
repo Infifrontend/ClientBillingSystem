@@ -68,10 +68,15 @@ function Router() {
   );
 
   // Listen for storage changes (in case of login from another tab)
+  // and also check on every route change
   useEffect(() => {
     const checkAuth = () => {
-      setIsLoggedIn(sessionStorage.getItem("isLoggedIn") === "true");
+      const loggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loggedIn);
     };
+
+    // Check immediately
+    checkAuth();
 
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
