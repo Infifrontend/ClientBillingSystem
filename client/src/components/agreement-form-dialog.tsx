@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -40,6 +41,10 @@ interface AgreementFormData {
   startDate: Date;
   endDate: Date;
   paymentTerms: string;
+  implementFees: string;
+  monthlySubscriptionFees: string;
+  changeRequestFees: string;
+  status: string;
   year1Fee: string;
   year2Fee: string;
   year3Fee: string;
@@ -68,6 +73,10 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
       clientId: "",
       agreementName: "",
       paymentTerms: "Net 30",
+      implementFees: "",
+      monthlySubscriptionFees: "",
+      changeRequestFees: "",
+      status: "active",
       year1Fee: "",
       year2Fee: "",
       year3Fee: "",
@@ -86,6 +95,10 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
         startDate: new Date(agreement.startDate),
         endDate: new Date(agreement.endDate),
         paymentTerms: "Net 30",
+        implementFees: "",
+        monthlySubscriptionFees: "",
+        changeRequestFees: "",
+        status: agreement.status || "active",
         year1Fee: totalValue.toString(),
         year2Fee: "",
         year3Fee: "",
@@ -97,6 +110,10 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
         clientId: "",
         agreementName: "",
         paymentTerms: "Net 30",
+        implementFees: "",
+        monthlySubscriptionFees: "",
+        changeRequestFees: "",
+        status: "active",
         year1Fee: "",
         year2Fee: "",
         year3Fee: "",
@@ -161,7 +178,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
         endDate: data.endDate.toISOString(),
         value: totalValue.toString(),
         currency: data.currency,
-        status: "active" as const,
+        status: data.status as "active" | "expiring_soon" | "expired" | "renewed",
         autoRenewal: data.autoRenewal,
       };
 
@@ -329,6 +346,116 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                       <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="implementFees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Implement Fees</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="monthlySubscriptionFees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Monthly Subscription Fees</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="changeRequestFees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Change Request Fees</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status *</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-row gap-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="active" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Active
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="expiring_soon" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Expiring Soon
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="expired" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Expired
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="renewed" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">
+                          Renewed
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
