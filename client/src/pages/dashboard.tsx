@@ -32,6 +32,8 @@ export default function Dashboard() {
       if (!response.ok) throw new Error("Failed to fetch stats");
       return response.json();
     },
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: revenueData } = useQuery<any>({
@@ -45,6 +47,8 @@ export default function Dashboard() {
       if (!response.ok) throw new Error("Failed to fetch revenue trends");
       return response.json();
     },
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: clientDistribution } = useQuery<any>({
@@ -58,6 +62,8 @@ export default function Dashboard() {
       if (!response.ok) throw new Error("Failed to fetch client distribution");
       return response.json();
     },
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const { data: upcomingRenewals } = useQuery<any>({
@@ -71,6 +77,8 @@ export default function Dashboard() {
       if (!response.ok) throw new Error("Failed to fetch upcoming renewals");
       return response.json();
     },
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
