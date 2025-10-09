@@ -105,7 +105,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="overflow-visible">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
