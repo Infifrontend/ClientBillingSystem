@@ -138,6 +138,24 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// CR Invoices table
+export const crInvoiceStatusEnum = pgEnum("cr_invoice_status", ["initiated", "pending", "approved"]);
+
+export const crInvoices = pgTable("cr_invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
+  employeeName: varchar("employee_name", { length: 255 }).notNull(),
+  crNo: varchar("cr_no", { length: 100 }).notNull().unique(),
+  crCurrency: currencyEnum("cr_currency").default("INR").notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  documentPath: varchar("document_path"),
+  status: crInvoiceStatusEnum("status").default("initiated").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // AI Insights table
 export const aiInsights = pgTable("ai_insights", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -210,6 +228,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+export const crInvoicesRelations = relations(crInvoices, ({ one }) => ({
+  client: one(clients, {
+    fields: [crInvoices.clientId],
+    references: [clients.id],
+  }),
+}));
+
 export const aiInsightsRelations = relations(aiInsights, ({ one }) => ({
   client: one(clients, {
     fields: [aiInsights.clientId],
@@ -253,6 +278,12 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertCrInvoiceSchema = createInsertSchema(crInvoices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertAiInsightSchema = createInsertSchema(aiInsights).omit({
   id: true,
   generatedAt: true,
@@ -271,5 +302,7 @@ export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
+export type InsertCrInvoice = z.infer<typeof insertCrInvoiceSchema>;
+export type CrInvoice = typeof crInvoices.$inferSelect;
 export type InsertAiInsight = z.infer<typeof insertAiInsightSchema>;
 export type AiInsight = typeof aiInsights.$inferSelect;

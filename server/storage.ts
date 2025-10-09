@@ -16,6 +16,8 @@ import type {
   InsertNotification,
   AiInsight,
   InsertAiInsight,
+  CrInvoice,
+  InsertCrInvoice,
 } from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -71,6 +73,12 @@ export interface IStorage {
 
   getAiInsights(filters?: { clientId?: string; insightType?: string }): Promise<AiInsight[]>;
   createAiInsight(insight: InsertAiInsight): Promise<AiInsight>;
+
+  getCrInvoices(filters?: { search?: string; clientId?: string; status?: string }): Promise<CrInvoice[]>;
+  getCrInvoice(id: string): Promise<CrInvoice | undefined>;
+  createCrInvoice(invoice: InsertCrInvoice): Promise<CrInvoice>;
+  updateCrInvoice(id: string, updates: Partial<InsertCrInvoice>): Promise<CrInvoice | undefined>;
+  deleteCrInvoice(id: string): Promise<boolean>;
 }
 
 export class DrizzleStorage implements IStorage {
@@ -426,6 +434,55 @@ export class DrizzleStorage implements IStorage {
   async createAiInsight(insight: InsertAiInsight): Promise<AiInsight> {
     const result = await db.insert(schema.aiInsights).values(insight).returning();
     return result[0];
+  }
+
+  async getCrInvoices(filters?: { search?: string; clientId?: string; status?: string }): Promise<CrInvoice[]> {
+    let query = db.select().from(schema.crInvoices);
+
+    const conditions = [];
+    if (filters?.search) {
+      conditions.push(
+        or(
+          like(schema.crInvoices.crNo, `%${filters.search}%`),
+          like(schema.crInvoices.employeeName, `%${filters.search}%`)
+        )
+      );
+    }
+    if (filters?.clientId) {
+      conditions.push(eq(schema.crInvoices.clientId, filters.clientId));
+    }
+    if (filters?.status && filters.status !== "all") {
+      conditions.push(eq(schema.crInvoices.status, filters.status as any));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return await query.orderBy(desc(schema.crInvoices.createdAt));
+  }
+
+  async getCrInvoice(id: string): Promise<CrInvoice | undefined> {
+    const result = await db.select().from(schema.crInvoices).where(eq(schema.crInvoices.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createCrInvoice(invoice: InsertCrInvoice): Promise<CrInvoice> {
+    const result = await db.insert(schema.crInvoices).values(invoice).returning();
+    return result[0];
+  }
+
+  async updateCrInvoice(id: string, updates: Partial<InsertCrInvoice>): Promise<CrInvoice | undefined> {
+    const result = await db.update(schema.crInvoices)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(schema.crInvoices.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCrInvoice(id: string): Promise<boolean> {
+    const result = await db.delete(schema.crInvoices).where(eq(schema.crInvoices.id, id)).returning();
+    return result.length > 0;
   }
 }
 

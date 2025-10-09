@@ -56,6 +56,13 @@ const menuItems = [
     roles: ["admin", "csm", "finance", "viewer"],
   },
   {
+    title: "Invoice Management",
+    url: "/invoice-management",
+    icon: FileText,
+    testId: "sidebar-invoice-management",
+    roles: ["admin", "finance"],
+  },
+  {
     title: "Reports",
     url: "/reports",
     icon: BarChart3,

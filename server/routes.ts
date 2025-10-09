@@ -717,6 +717,97 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // CR Invoices routes
+  app.get("/api/cr-invoices", async (req: Request, res: Response) => {
+    try {
+      const { search, clientId, status } = req.query;
+      const invoices = await storage.getCrInvoices({
+        search: search as string,
+        clientId: clientId as string,
+        status: status as string,
+      });
+
+      const clients = await storage.getClients();
+      const invoicesWithClients = invoices.map(invoice => {
+        const client = clients.find(c => c.id === invoice.clientId);
+        return {
+          ...invoice,
+          clientName: client?.name || "Unknown",
+        };
+      });
+
+      res.json(invoicesWithClients);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/cr-invoices/:id", async (req: Request, res: Response) => {
+    try {
+      const invoice = await storage.getCrInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ error: "CR Invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/cr-invoices", async (req: Request, res: Response) => {
+    try {
+      const invoiceData = {
+        ...req.body,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+      };
+
+      const invoice = await storage.createCrInvoice(invoiceData);
+      res.json(invoice);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/cr-invoices/:id", async (req: Request, res: Response) => {
+    try {
+      const invoiceData = {
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+      };
+
+      const invoice = await storage.updateCrInvoice(req.params.id, invoiceData);
+      if (!invoice) {
+        return res.status(404).json({ error: "CR Invoice not found" });
+      }
+      res.json(invoice);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/cr-invoices/:id", async (req: Request, res: Response) => {
+    try {
+      const invoice = await storage.getCrInvoice(req.params.id);
+      if (!invoice) {
+        return res.status(404).json({ error: "CR Invoice not found" });
+      }
+
+      const success = await storage.deleteCrInvoice(req.params.id);
+      if (!success) {
+        return res.status(500).json({ error: "Failed to delete CR Invoice" });
+      }
+
+      res.json({ success: true, message: "CR Invoice deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/notifications/urgent", async (req: Request, res: Response) => {
     try {
       const now = new Date();

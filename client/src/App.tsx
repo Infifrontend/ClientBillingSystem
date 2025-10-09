@@ -17,6 +17,7 @@ import Agreements from "@/pages/agreements";
 import Reports from "@/pages/reports";
 import Insights from "@/pages/insights";
 import UsersPage from "./pages/users";
+import InvoiceManagement from "./pages/invoice-management";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 
@@ -52,6 +53,7 @@ function AuthenticatedRoutes() {
               <Route path="/reports" component={Reports} />
               <Route path="/insights" component={Insights} />
               <Route path="/users" component={UsersPage} />
+              <Route path="/invoice-management" component={InvoiceManagement} />
               <Route component={NotFound} />
             </Switch>
           </main>
