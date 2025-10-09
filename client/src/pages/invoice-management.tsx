@@ -21,9 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, FileText, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, FileText, Edit, Trash2, Download, Upload } from "lucide-react";
 import type { CrInvoice, Client } from "@shared/schema";
 import { CrInvoiceFormDialog } from "@/components/cr-invoice-form-dialog";
+import { InvoiceBulkImportDialog } from "@/components/invoice-bulk-import-dialog";
+import { generateSampleInvoiceSheet } from "@/lib/invoiceImport";
 
 const statusColors = {
   initiated: "default",
@@ -39,6 +41,7 @@ export default function InvoiceManagement() {
   const [clientFilter, setClientFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<CrInvoice | undefined>();
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const { data: clients = [] } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
@@ -109,13 +112,29 @@ export default function InvoiceManagement() {
           <h1 className="text-3xl font-bold font-display">Invoice Management</h1>
           <p className="text-muted-foreground">Manage CR invoices and track approval status</p>
         </div>
-        <Button onClick={() => {
-          setSelectedInvoice(undefined);
-          setIsDialogOpen(true);
-        }}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add CR Invoice
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => generateSampleInvoiceSheet()}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Sample
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setIsBulkImportOpen(true)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <Button onClick={() => {
+            setSelectedInvoice(undefined);
+            setIsDialogOpen(true);
+          }}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add CR Invoice
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -238,6 +257,11 @@ export default function InvoiceManagement() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         invoice={selectedInvoice}
+      />
+
+      <InvoiceBulkImportDialog
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
       />
     </div>
   );
