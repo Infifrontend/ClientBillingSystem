@@ -221,21 +221,21 @@ export function ClientBulkImportDialog({
                   {importResults.map((result, index) => (
                     <div
                       key={index}
-                      className={`flex items-start gap-2 text-sm p-2 rounded ${
-                        result.success ? "bg-green-50" : "bg-destructive/10"
+                      className={`flex items-start gap-3 text-sm p-3 rounded-md ${
+                        result.success ? "bg-green-50 dark:bg-green-950/20" : "bg-destructive/10"
                       }`}
                     >
                       {result.success ? (
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                       ) : (
-                        <XCircle className="h-4 w-4 text-destructive mt-0.5" />
+                        <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
                       )}
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p className="font-medium">
                           Row {result.row}: {result.name}
                         </p>
                         {result.error && (
-                          <p className="text-xs text-destructive mt-1">
+                          <p className="text-xs text-destructive mt-1.5 break-words">
                             {result.error}
                           </p>
                         )}
