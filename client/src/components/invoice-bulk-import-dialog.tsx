@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -10,12 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, CheckCircle, XCircle } from "lucide-react";
-import { parseInvoiceFile, validateInvoiceRow, InvoiceImportRow } from "@/lib/invoiceImport";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Client, Service } from "@shared/schema";
+import { Upload, FileText, CheckCircle, XCircle } from "lucide-react";
+import { parseInvoiceFile, validateInvoiceRow, type InvoiceImportRow } from "@/lib/invoiceImport";
+import type { Client } from "@shared/schema";
 
 interface InvoiceBulkImportDialogProps {
   open: boolean;
@@ -24,8 +20,7 @@ interface InvoiceBulkImportDialogProps {
 
 interface ImportResult {
   row: number;
-  clientName: string;
-  invoiceNumber: string;
+  data: InvoiceImportRow;
   success: boolean;
   error?: string;
 }
@@ -35,271 +30,187 @@ export function InvoiceBulkImportDialog({
   onOpenChange,
 }: InvoiceBulkImportDialogProps) {
   const { toast } = useToast();
-  const [file, setFile] = useState<File | null>(null);
-  const [importing, setImporting] = useState(false);
+  const queryClient = useQueryClient();
+  const [isProcessing, setIsProcessing] = useState(false);
   const [importResults, setImportResults] = useState<ImportResult[]>([]);
-  const [progress, setProgress] = useState(0);
 
-  const { data: clients } = useQuery<Client[]>({
+  const { data: clients = [] } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
   });
 
-  const { data: servicesResponse } = useQuery<{ data: Service[] }>({
-    queryKey: ["/api/services"],
-  });
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const services = servicesResponse?.data || [];
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setImportResults([]);
-    }
-  };
-
-  const importInvoices = async () => {
-    if (!file) {
-      toast({
-        title: "Error",
-        description: "Please select a file to upload",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setImporting(true);
+    setIsProcessing(true);
     setImportResults([]);
-    setProgress(0);
 
     try {
-      const invoicesData = await parseInvoiceFile(file);
-      
-      if (invoicesData.length === 0) {
-        toast({
-          title: "Error",
-          description: "No data found in the file",
-          variant: "destructive",
-        });
-        setImporting(false);
-        return;
-      }
-
+      const rows = await parseInvoiceFile(file);
       const results: ImportResult[] = [];
-      
-      for (let i = 0; i < invoicesData.length; i++) {
-        const row = invoicesData[i];
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
         const rowNumber = i + 2;
-        
+
         const validationError = validateInvoiceRow(row);
         if (validationError) {
           results.push({
             row: rowNumber,
-            clientName: row.clientName || 'Unknown',
-            invoiceNumber: row.invoiceNumber || 'Unknown',
+            data: row,
             success: false,
             error: validationError,
           });
-          setProgress(((i + 1) / invoicesData.length) * 100);
           continue;
         }
 
-        const client = clients?.find(c => 
-          c.name.toLowerCase() === row.clientName.trim().toLowerCase()
+        const client = clients.find(
+          (c) => c.name.toLowerCase() === row.clientName.toLowerCase()
         );
 
         if (!client) {
           results.push({
             row: rowNumber,
-            clientName: row.clientName,
-            invoiceNumber: row.invoiceNumber,
+            data: row,
             success: false,
-            error: 'Client not found',
+            error: `Client "${row.clientName}" not found`,
           });
-          setProgress(((i + 1) / invoicesData.length) * 100);
           continue;
         }
 
-        let serviceId = null;
-        if (row.serviceType) {
-          const service = services?.find(s => 
-            s.clientId === client.id && 
-            s.serviceType.toLowerCase() === row.serviceType.toLowerCase()
-          );
-          serviceId = service?.id || null;
-        }
-
-        const amount = parseFloat(row.amount);
-
-        const invoiceData = {
-          clientId: client.id,
-          serviceId: serviceId,
-          invoiceNumber: row.invoiceNumber.trim(),
-          amount: amount.toString(),
-          currency: row.currency.toUpperCase(),
-          issueDate: new Date(row.issueDate).toISOString(),
-          dueDate: new Date(row.dueDate).toISOString(),
-          paidDate: row.paidDate ? new Date(row.paidDate).toISOString() : null,
-          status: row.status?.toLowerCase() || 'pending',
-          notes: row.notes?.trim() || null,
-        };
-
         try {
-          await apiRequest("POST", "/api/invoices", invoiceData);
+          const crInvoiceData = {
+            clientId: client.id,
+            employeeName: client.employeeName || "Not Specified",
+            crNo: row.invoiceNumber,
+            crCurrency: row.currency.toUpperCase(),
+            amount: row.amount.toString(),
+            startDate: new Date(row.issueDate).toISOString(),
+            endDate: new Date(row.dueDate).toISOString(),
+            status: row.status.toLowerCase() === "paid" ? "approved" : row.status.toLowerCase() === "pending" ? "pending" : "initiated",
+          };
+
+          const response = await fetch("/api/cr-invoices", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(crInvoiceData),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to create CR invoice");
+          }
+
           results.push({
             row: rowNumber,
-            clientName: row.clientName,
-            invoiceNumber: row.invoiceNumber,
+            data: row,
             success: true,
           });
         } catch (error: any) {
-          const errorMessage = error.error || error.message || 'Failed to create invoice';
           results.push({
             row: rowNumber,
-            clientName: row.clientName,
-            invoiceNumber: row.invoiceNumber,
+            data: row,
             success: false,
-            error: errorMessage,
+            error: error.message,
           });
         }
-        
-        setProgress(((i + 1) / invoicesData.length) * 100);
       }
 
       setImportResults(results);
-      
-      // Invalidate both invoice queries to refresh the list
-      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
+
       queryClient.invalidateQueries({ queryKey: ["/api/cr-invoices"] });
-      
+
       const successCount = results.filter(r => r.success).length;
       const failCount = results.filter(r => !r.success).length;
-      
+
       toast({
         title: "Import Complete",
-        description: `Successfully imported ${successCount} invoice(s). ${failCount > 0 ? `${failCount} failed.` : ''}`,
+        description: `Successfully imported ${successCount} CR invoices. ${failCount} failed.`,
+        variant: failCount > 0 ? "destructive" : "default",
       });
-      
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to parse file",
+        description: error.message || "Failed to process file",
         variant: "destructive",
       });
     } finally {
-      setImporting(false);
+      setIsProcessing(false);
+      event.target.value = "";
     }
   };
 
-  const handleClose = () => {
-    setFile(null);
-    setImportResults([]);
-    setProgress(0);
-    onOpenChange(false);
-  };
-
-  const successCount = importResults.filter(r => r.success).length;
-  const failCount = importResults.filter(r => !r.success).length;
-
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Bulk Import Invoices</DialogTitle>
+          <DialogTitle>Bulk Import CR Invoices</DialogTitle>
           <DialogDescription>
-            Upload an Excel or CSV file to import multiple invoices at once
+            Upload a CSV or Excel file to import multiple CR invoices at once
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="border-2 border-dashed rounded-lg p-6 text-center">
+          <div className="border-2 border-dashed rounded-lg p-8 text-center">
             <input
               type="file"
               accept=".csv,.xlsx,.xls"
-              onChange={handleFileChange}
+              onChange={handleFileUpload}
+              disabled={isProcessing}
               className="hidden"
-              id="invoice-bulk-upload"
-              disabled={importing}
+              id="invoice-file-upload"
             />
-            <label htmlFor="invoice-bulk-upload" className="cursor-pointer">
-              <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-sm font-medium mb-1">
-                {file ? file.name : "Click to upload or drag and drop"}
+            <label
+              htmlFor="invoice-file-upload"
+              className={`cursor-pointer ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-sm font-medium mb-2">
+                {isProcessing ? "Processing..." : "Click to upload or drag and drop"}
               </p>
               <p className="text-xs text-muted-foreground">
-                Excel (.xlsx, .xls) or CSV files
+                CSV or Excel file (XLSX, XLS)
               </p>
             </label>
           </div>
 
-          {importing && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Importing invoices...</span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} />
-            </div>
-          )}
-
           {importResults.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>{successCount} succeeded</span>
-                </div>
-                {failCount > 0 && (
-                  <div className="flex items-center gap-2 text-red-600">
-                    <XCircle className="h-4 w-4" />
-                    <span>{failCount} failed</span>
-                  </div>
-                )}
-              </div>
-
-              <ScrollArea className="h-[200px] rounded-md border p-4">
-                <div className="space-y-2">
-                  {importResults.map((result, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-start gap-2 text-sm p-2 rounded ${
-                        result.success ? 'bg-green-50' : 'bg-red-50'
-                      }`}
-                    >
+            <div className="space-y-2">
+              <h3 className="font-semibold">Import Results</h3>
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {importResults.map((result, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg border ${
+                      result.success
+                        ? "border-green-200 bg-green-50"
+                        : "border-red-200 bg-red-50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
                       {result.success ? (
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                       ) : (
-                        <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
+                        <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
                       )}
                       <div className="flex-1">
-                        <p className="font-medium">
-                          Row {result.row}: {result.clientName} - {result.invoiceNumber}
+                        <p className="text-sm font-medium">
+                          Row {result.row}: {result.data.clientName} - {result.data.invoiceNumber}
                         </p>
-                        {result.error && (
-                          <p className="text-red-600 text-xs mt-1">
-                            {result.error}
-                          </p>
+                        {!result.success && result.error && (
+                          <p className="text-sm text-red-600 mt-1">{result.error}</p>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={importing}
-            >
-              {importResults.length > 0 ? "Close" : "Cancel"}
-            </Button>
-            <Button
-              onClick={importInvoices}
-              disabled={!file || importing}
-            >
-              {importing ? "Importing..." : "Import Invoices"}
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
             </Button>
           </div>
         </div>

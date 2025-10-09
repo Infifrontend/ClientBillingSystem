@@ -19,35 +19,31 @@ export const generateSampleInvoiceSheet = () => {
   const sampleData = [
     {
       clientName: 'Sample Airlines Ltd',
-      serviceType: 'implementation',
-      invoiceNumber: 'INV-2024-001',
+      invoiceNumber: 'CR-2024-001',
       amount: 50000,
       currency: 'USD',
       issueDate: '2024-01-15',
       dueDate: '2024-02-15',
-      paidDate: '',
       status: 'pending',
-      notes: 'Initial implementation invoice'
+      notes: 'Change request invoice'
     },
     {
       clientName: 'Demo Travel Agency',
-      serviceType: 'subscription',
-      invoiceNumber: 'INV-2024-002',
+      invoiceNumber: 'CR-2024-002',
       amount: 3000,
-      currency: 'USD',
+      currency: 'INR',
       issueDate: '2024-01-20',
       dueDate: '2024-02-20',
-      paidDate: '2024-02-18',
-      status: 'paid',
-      notes: 'Monthly subscription fee'
+      status: 'approved',
+      notes: 'Monthly CR invoice'
     }
   ];
 
   const worksheet = XLSX.utils.json_to_sheet(sampleData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Invoices');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'CR Invoices');
   
-  XLSX.writeFile(workbook, 'invoice_import_template.xlsx');
+  XLSX.writeFile(workbook, 'cr_invoice_import_template.xlsx');
 };
 
 export const parseInvoiceFile = (file: File): Promise<InvoiceImportRow[]> => {
@@ -122,7 +118,7 @@ export const validateInvoiceRow = (row: InvoiceImportRow): string | null => {
     return 'Due date is required';
   }
   
-  const validStatuses = ['pending', 'paid', 'overdue', 'cancelled'];
+  const validStatuses = ['initiated', 'pending', 'approved'];
   if (row.status && !validStatuses.includes(row.status.toLowerCase())) {
     return `Invalid status. Must be one of: ${validStatuses.join(', ')}`;
   }
