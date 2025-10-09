@@ -167,9 +167,8 @@ export function InvoiceBulkImportDialog({
 
       setImportResults(results);
       
-      // Invalidate both invoice queries to refresh the list
+      // Invalidate invoice queries to refresh the list
       queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/cr-invoices"] });
       
       const successCount = results.filter(r => r.success).length;
       const failCount = results.filter(r => !r.success).length;

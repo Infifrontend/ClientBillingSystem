@@ -48,14 +48,14 @@ export default function InvoiceManagement() {
   });
 
   const { data: invoices = [], isLoading } = useQuery<any[]>({
-    queryKey: ["/api/cr-invoices", searchTerm, statusFilter, clientFilter],
+    queryKey: ["/api/invoices", searchTerm, statusFilter, clientFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (clientFilter !== "all") params.append("clientId", clientFilter);
 
-      const response = await fetch(`/api/cr-invoices?${params.toString()}`);
+      const response = await fetch(`/api/invoices?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch invoices");
       return response.json();
     },
@@ -63,17 +63,17 @@ export default function InvoiceManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/cr-invoices/${id}`, {
+      const response = await fetch(`/api/invoices/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete invoice");
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cr-invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/invoices"] });
       toast({
         title: "Success",
-        description: "CR Invoice deleted successfully",
+        description: "Invoice deleted successfully",
       });
     },
     onError: (error: Error) => {
