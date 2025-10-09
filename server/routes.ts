@@ -338,12 +338,17 @@ export function registerRoutes(app: Express) {
         }
 
         // Finally delete the client
-        const success = await storage.deleteClient(req.params.id);
-        if (!success) {
-          throw new Error("Client deletion from database failed");
+        try {
+          const success = await storage.deleteClient(req.params.id);
+          if (!success) {
+            throw new Error("Client not found or already deleted");
+          }
+          console.log('[INFO] Client deleted successfully:', req.params.id);
+          res.json({ success: true, message: "Client deleted successfully" });
+        } catch (clientDeleteError: any) {
+          console.error('[ERROR] Client deletion failed:', clientDeleteError);
+          throw new Error(`Database deletion failed: ${clientDeleteError.message}`);
         }
-
-        res.json({ success: true, message: "Client deleted successfully" });
       } catch (deleteError: any) {
         console.error('[ERROR] Failed to delete client:', deleteError);
         return res.status(500).json({ error: deleteError.message || "Failed to delete client" });

@@ -182,11 +182,12 @@ export class DrizzleStorage implements IStorage {
 
   async deleteClient(id: string): Promise<boolean> {
     try {
-      const result = await db.delete(schema.clients).where(eq(schema.clients.id, id));
+      const result = await db.delete(schema.clients).where(eq(schema.clients.id, id)).returning();
+      console.log('[STORAGE] deleteClient result:', result);
       return result.length > 0;
     } catch (error) {
-      console.error('Error deleting client:', error);
-      return false;
+      console.error('[STORAGE] Error deleting client:', error);
+      throw error; // Throw the error instead of returning false
     }
   }
 
