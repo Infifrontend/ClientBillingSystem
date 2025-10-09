@@ -114,6 +114,13 @@ export default function ClientDetail() {
               <p className="font-medium capitalize">{client.industry.replace(/_/g, ' ')}</p>
             </div>
 
+            {client.employeeName && (
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Employee Name</p>
+                <p className="font-medium">{client.employeeName}</p>
+              </div>
+            )}
+
             {client.contactPerson && (
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Contact Person</p>

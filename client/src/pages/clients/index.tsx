@@ -304,6 +304,12 @@ export default function ClientsList() {
                     <p className="text-sm text-muted-foreground mb-1">Industry</p>
                     <p className="font-medium capitalize">{previewClient.industry.replace(/_/g, ' ')}</p>
                   </div>
+                  {previewClient.employeeName && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Employee Name</p>
+                      <p className="font-medium">{previewClient.employeeName}</p>
+                    </div>
+                  )}
                   {previewClient.region && (
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Region</p>

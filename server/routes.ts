@@ -1,10 +1,10 @@
-
 import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
 import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
 import { log } from "./vite";
+import { db, clients, sql } from "./db";
 
 // Simple mock user for development - replace with your own auth logic
 const mockUser = {
@@ -24,54 +24,45 @@ export function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/users", requireRole("admin"), async (req: Request, res: Response) => {
+  // Get employees for autocomplete
+  app.get("/api/employees", async (req, res) => {
     try {
-      const users = await storage.getUsers();
-      res.json(users);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+      const search = req.query.search as string;
 
-  app.post("/api/users", requireRole("admin"), async (req: Request, res: Response) => {
-    try {
-      const validatedData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(validatedData);
-      res.json(user);
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors });
+      // Get unique employee names from clients table
+      let query = db
+        .select({ employeeName: clients.employeeName })
+        .from(clients)
+        .where(sql`${clients.employeeName} IS NOT NULL AND ${clients.employeeName} != ''`);
+
+      if (search && search.length >= 3) {
+        query = query.where(sql`LOWER(${clients.employeeName}) LIKE LOWER(${`%${search}%`})`);
       }
-      res.status(500).json({ error: error.message });
-    }
-  });
 
-  app.patch("/api/users/:id/role", requireRole("admin"), async (req: Request, res: Response) => {
-    try {
-      const { role } = req.body;
-      const user = await storage.updateUserRole(req.params.id, role);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      res.json(user);
+      const employees = await query
+        .groupBy(clients.employeeName)
+        .limit(10);
+
+      res.json(employees.map(e => e.employeeName));
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ message: error.message });
     }
   });
 
+  // Dashboard stats endpoint
   app.get("/api/dashboard/stats", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
-      
-      const clients = clientId && clientId !== "all" 
+
+      const clients = clientId && clientId !== "all"
         ? [await storage.getClient(clientId as string)].filter(Boolean)
         : await storage.getClients();
-      
-      const agreements = await storage.getAgreements({ 
+
+      const agreements = await storage.getAgreements({
         status: "active",
         ...(clientId && clientId !== "all" ? { clientId: clientId as string } : {})
       });
-      
+
       const invoices = await storage.getInvoices(
         clientId && clientId !== "all" ? { clientId: clientId as string } : {}
       );
@@ -107,7 +98,7 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/revenue-trends", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
-      
+
       const invoices = await storage.getInvoices(
         clientId && clientId !== "all" ? { clientId: clientId as string } : {}
       );
@@ -116,7 +107,7 @@ export function registerRoutes(app: Express) {
       const now = new Date();
       const monthsData: { [key: string]: number } = {};
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      
+
       // Initialize last 6 months with zero revenue
       for (let i = 5; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -130,7 +121,7 @@ export function registerRoutes(app: Express) {
         .forEach(inv => {
           const paidDate = new Date(inv.paidDate!);
           const monthKey = `${monthNames[paidDate.getMonth()]}`;
-          
+
           // Only include if within last 6 months
           const monthsDiff = (now.getFullYear() - paidDate.getFullYear()) * 12 + (now.getMonth() - paidDate.getMonth());
           if (monthsDiff >= 0 && monthsDiff < 6 && monthsData.hasOwnProperty(monthKey)) {
@@ -152,11 +143,11 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/client-distribution", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
-      
+
       const clients = clientId && clientId !== "all"
         ? [await storage.getClient(clientId as string)].filter(Boolean)
         : await storage.getClients();
-      
+
       const distribution = clients.reduce((acc: any, client) => {
         const industry = client.industry.replace(/_/g, ' ')
           .split(' ')
@@ -180,7 +171,7 @@ export function registerRoutes(app: Express) {
   app.get("/api/dashboard/upcoming-renewals", async (req: Request, res: Response) => {
     try {
       const { clientId } = req.query;
-      
+
       const agreements = await storage.getAgreements(
         clientId && clientId !== "all" ? { clientId: clientId as string } : {}
       );

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -12,10 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { ArrowLeft, Check } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { cn } from "@/lib/utils";
 
 export default function ClientForm() {
   const { toast } = useToast();
@@ -39,9 +42,26 @@ export default function ClientForm() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  const [employeeSearch, setEmployeeSearch] = useState("");
+  const [employeePopoverOpen, setEmployeePopoverOpen] = useState(false);
+
   const { data: client } = useQuery<Client>({
     queryKey: ["/api/clients", clientId],
     enabled: isEdit && !!clientId,
+  });
+
+  const { data: employees } = useQuery<string[]>({
+    queryKey: ["/api/employees", employeeSearch],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (employeeSearch) {
+        params.append("search", employeeSearch);
+      }
+      const response = await fetch(`/api/employees?${params.toString()}`);
+      if (!response.ok) throw new Error("Failed to fetch employees");
+      return response.json();
+    },
+    enabled: employeeSearch.length >= 3,
   });
 
   const form = useForm<InsertClient>({
@@ -165,11 +185,57 @@ export default function ClientForm() {
                 control={form.control}
                 name="employeeName"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Employee Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} data-testid="input-employee-name" />
-                    </FormControl>
+                    <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            data-testid="input-employee-name"
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setEmployeeSearch(e.target.value);
+                              if (e.target.value.length >= 3) {
+                                setEmployeePopoverOpen(true);
+                              }
+                            }}
+                            placeholder="Type at least 3 characters..."
+                          />
+                        </FormControl>
+                      </PopoverTrigger>
+                      {employeeSearch.length >= 3 && (
+                        <PopoverContent className="w-[300px] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Search employees..." value={employeeSearch} />
+                            <CommandList>
+                              <CommandEmpty>No employees found.</CommandEmpty>
+                              <CommandGroup>
+                                {employees?.map((employee) => (
+                                  <CommandItem
+                                    key={employee}
+                                    value={employee}
+                                    onSelect={() => {
+                                      field.onChange(employee);
+                                      setEmployeeSearch(employee);
+                                      setEmployeePopoverOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === employee ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {employee}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      )}
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
