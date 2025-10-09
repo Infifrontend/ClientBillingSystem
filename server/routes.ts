@@ -1104,11 +1104,45 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "User not found" });
       }
       
-      // In a real application, you would send an email here
-      // For now, we'll just return success
-      res.json({ success: true, message: "Password reset email sent" });
+      // Generate a password reset token (in production, this should be stored in DB with expiry)
+      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const resetLink = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
+      
+      // Send password reset email
+      const emailData = {
+        to: user.email,
+        subject: "Password Reset Request - Infiniti CMS",
+        message: `Hello ${user.firstName} ${user.lastName},
+
+We received a request to reset your password for your Infiniti CMS account.
+
+To reset your password, please click the link below:
+${resetLink}
+
+This link will expire in 24 hours for security reasons.
+
+If you did not request a password reset, please ignore this email or contact your system administrator.
+
+Best regards,
+Infiniti CMS Team`,
+      };
+
+      // Use the email service
+      const emailResponse = await fetch("http://localhost:5000/api/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(emailData),
+      });
+
+      if (!emailResponse.ok) {
+        const error = await emailResponse.json();
+        throw new Error(error.error || "Failed to send password reset email");
+      }
+      
+      res.json({ success: true, message: "Password reset email sent successfully" });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      console.error('[ERROR] Failed to send password reset email:', error);
+      res.status(500).json({ error: error.message || "Failed to send password reset email" });
     }
   });
 
