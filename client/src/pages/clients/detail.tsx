@@ -211,26 +211,41 @@ export default function ClientDetail() {
                           </Badge>
                           {service.status && (
                             <Badge 
-                              variant={service.status === "paid" ? "default" : "secondary"}
-                              className={service.status === "paid" ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"}
+                              className={
+                                service.status === "paid" 
+                                  ? "bg-green-500 hover:bg-green-600 text-white border-green-600" 
+                                  : "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-600"
+                              }
                             >
                               {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
                             </Badge>
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
+                      <div className="grid grid-cols-2 gap-3 text-sm mt-3">
                         {service.startDate && (
-                          <span>Start: {new Date(service.startDate).toLocaleDateString()}</span>
+                          <div>
+                            <p className="text-muted-foreground">Start Date</p>
+                            <p className="font-medium">{new Date(service.startDate).toLocaleDateString()}</p>
+                          </div>
                         )}
                         {service.goLiveDate && (
-                          <span>Go-Live: {new Date(service.goLiveDate).toLocaleDateString()}</span>
+                          <div>
+                            <p className="text-muted-foreground">Go-Live Date</p>
+                            <p className="font-medium">{new Date(service.goLiveDate).toLocaleDateString()}</p>
+                          </div>
                         )}
                         {service.invoiceNumber && (
-                          <span>Invoice: {service.invoiceNumber}</span>
+                          <div>
+                            <p className="text-muted-foreground">Invoice Number</p>
+                            <p className="font-medium font-mono">{service.invoiceNumber}</p>
+                          </div>
                         )}
                         {service.invoiceDate && (
-                          <span>Invoice Date: {new Date(service.invoiceDate).toLocaleDateString()}</span>
+                          <div>
+                            <p className="text-muted-foreground">Invoice Date</p>
+                            <p className="font-medium">{new Date(service.invoiceDate).toLocaleDateString()}</p>
+                          </div>
                         )}
                       </div>
                     </div>
