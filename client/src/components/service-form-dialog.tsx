@@ -29,7 +29,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { CalendarIcon, Upload, X } from "lucide-react";
 import { format } from "date-fns";
@@ -58,7 +62,11 @@ interface ServiceFormDialogProps {
   service?: any;
 }
 
-export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDialogProps) {
+export function ServiceFormDialog({
+  open,
+  onOpenChange,
+  service,
+}: ServiceFormDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,35 +80,43 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
     queryKey: ["/api/users"],
   });
 
-  const csmUsers = users?.filter(u => u.role === "csm" || u.role === "admin");
+  const csmUsers = users?.filter((u) => u.role === "csm" || u.role === "admin");
 
   const form = useForm<ServiceFormData>({
-    defaultValues: service ? {
-      clientId: service.clientId,
-      serviceType: service.serviceType,
-      description: service.description || "",
-      amount: service.amount,
-      currency: service.currency,
-      startDate: service.startDate ? new Date(service.startDate) : undefined,
-      goLiveDate: service.goLiveDate ? new Date(service.goLiveDate) : undefined,
-      billingCycle: service.billingCycle || "",
-      isRecurring: service.isRecurring || false,
-      assignedCsmId: service.assignedCsmId || "",
-      invoiceNumber: service.invoiceNumber || "",
-      invoiceDate: service.invoiceDate ? new Date(service.invoiceDate) : undefined,
-      status: service.status || "pending",
-    } : {
-      clientId: "",
-      serviceType: "",
-      description: "",
-      amount: "",
-      currency: "INR",
-      billingCycle: "",
-      isRecurring: false,
-      assignedCsmId: "",
-      invoiceNumber: "",
-      status: "pending",
-    },
+    defaultValues: service
+      ? {
+          clientId: service.clientId,
+          serviceType: service.serviceType,
+          description: service.description || "",
+          amount: service.amount,
+          currency: service.currency,
+          startDate: service.startDate
+            ? new Date(service.startDate)
+            : undefined,
+          goLiveDate: service.goLiveDate
+            ? new Date(service.goLiveDate)
+            : undefined,
+          billingCycle: service.billingCycle || "",
+          isRecurring: service.isRecurring || false,
+          assignedCsmId: service.assignedCsmId || "",
+          invoiceNumber: service.invoiceNumber || "",
+          invoiceDate: service.invoiceDate
+            ? new Date(service.invoiceDate)
+            : undefined,
+          status: service.status || "pending",
+        }
+      : {
+          clientId: "",
+          serviceType: "",
+          description: "",
+          amount: "",
+          currency: "INR",
+          billingCycle: "",
+          isRecurring: false,
+          assignedCsmId: "",
+          invoiceNumber: "",
+          status: "pending",
+        },
   });
 
   // Reset form when service changes (for edit mode)
@@ -113,12 +129,16 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
         amount: service.amount,
         currency: service.currency,
         startDate: service.startDate ? new Date(service.startDate) : undefined,
-        goLiveDate: service.goLiveDate ? new Date(service.goLiveDate) : undefined,
+        goLiveDate: service.goLiveDate
+          ? new Date(service.goLiveDate)
+          : undefined,
         billingCycle: service.billingCycle || "",
         isRecurring: service.isRecurring || false,
         assignedCsmId: service.assignedCsmId || "",
         invoiceNumber: service.invoiceNumber || "",
-        invoiceDate: service.invoiceDate ? new Date(service.invoiceDate) : undefined,
+        invoiceDate: service.invoiceDate
+          ? new Date(service.invoiceDate)
+          : undefined,
         status: service.status || "pending",
       });
     } else if (!service && open) {
@@ -210,12 +230,12 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setUploadedFiles(prev => [...prev, ...newFiles]);
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
     }
   };
 
   const removeFile = (index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (data: ServiceFormData) => {
@@ -251,9 +271,13 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{service ? "Edit Service" : "Add New Service"}</DialogTitle>
+          <DialogTitle>
+            {service ? "Edit Service" : "Add New Service"}
+          </DialogTitle>
           <DialogDescription>
-            {service ? "Update service details and billing information" : "Create a new service with billing details"}
+            {service
+              ? "Update service details and billing information"
+              : "Create a new service with billing details"}
           </DialogDescription>
         </DialogHeader>
 
@@ -300,9 +324,13 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="implementation">Implementation</SelectItem>
+                        <SelectItem value="implementation">
+                          Implementation
+                        </SelectItem>
                         <SelectItem value="cr">CR (Change Request)</SelectItem>
-                        <SelectItem value="subscription">Subscription</SelectItem>
+                        <SelectItem value="subscription">
+                          Subscription
+                        </SelectItem>
                         <SelectItem value="hosting">Hosting</SelectItem>
                         <SelectItem value="others">Others</SelectItem>
                       </SelectContent>
@@ -394,7 +422,7 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
@@ -433,7 +461,7 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
@@ -492,8 +520,10 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Assign Responsible CSM</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(value === "unassigned" ? "" : value)} 
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "unassigned" ? "" : value)
+                      }
                       value={field.value || "unassigned"}
                     >
                       <FormControl>
@@ -525,7 +555,9 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Recurring Service</FormLabel>
+                    <FormLabel className="text-base">
+                      Recurring Service
+                    </FormLabel>
                     <FormDescription>
                       Enable if this is a recurring billing service
                     </FormDescription>
@@ -540,7 +572,7 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="invoiceNumber"
@@ -548,10 +580,7 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                   <FormItem>
                     <FormLabel>Invoice Number</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="INV-2024-001"
-                        {...field}
-                      />
+                      <Input placeholder="INV-2024-001" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -571,7 +600,7 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
@@ -596,30 +625,30 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="status"
-              rules={{ required: "Status is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="status"
+                rules={{ required: "Status is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="space-y-4">
               <FormLabel>Document Uploads</FormLabel>
@@ -650,7 +679,9 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                       key={index}
                       className="flex items-center justify-between p-2 bg-muted rounded-md"
                     >
-                      <span className="text-sm truncate flex-1">{file.name}</span>
+                      <span className="text-sm truncate flex-1">
+                        {file.name}
+                      </span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -675,7 +706,13 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (service ? "Updating..." : "Creating...") : (service ? "Update Service" : "Create Service")}
+                {isSubmitting
+                  ? service
+                    ? "Updating..."
+                    : "Creating..."
+                  : service
+                    ? "Update Service"
+                    : "Create Service"}
               </Button>
             </div>
           </form>
