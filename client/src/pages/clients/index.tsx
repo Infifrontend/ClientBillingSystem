@@ -45,10 +45,14 @@ import {
   Edit,
   Eye,
   Trash2,
+  Download,
+  Upload,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Client } from "@shared/schema";
+import { ClientBulkImportDialog } from "@/components/client-bulk-import-dialog";
+import { generateSampleClientSheet } from "@/lib/clientImport";
 
 export default function ClientsList() {
   const { toast } = useToast();
@@ -59,6 +63,7 @@ export default function ClientsList() {
   const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [previewClient, setPreviewClient] = useState<Client | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: async (clientId: string) => {
@@ -150,12 +155,30 @@ export default function ClientsList() {
           </h1>
           <p className="text-muted-foreground">Manage your client portfolio</p>
         </div>
-        <Link href="/clients/new">
-          <Button data-testid="button-add-client">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Client
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={generateSampleClientSheet}
+            data-testid="button-download-sample"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Sample
           </Button>
-        </Link>
+          <Button
+            variant="outline"
+            onClick={() => setIsBulkImportOpen(true)}
+            data-testid="button-bulk-import"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <Link href="/clients/new">
+            <Button data-testid="button-add-client">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Client
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card>
@@ -497,6 +520,11 @@ export default function ClientsList() {
           )}
         </DialogContent>
       </Dialog>
+
+      <ClientBulkImportDialog
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
+      />
     </div>
   );
 }
