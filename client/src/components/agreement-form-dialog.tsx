@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -29,7 +28,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -58,7 +61,11 @@ interface AgreementFormDialogProps {
   agreement?: any | null;
 }
 
-export function AgreementFormDialog({ open, onOpenChange, agreement }: AgreementFormDialogProps) {
+export function AgreementFormDialog({
+  open,
+  onOpenChange,
+  agreement,
+}: AgreementFormDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,9 +132,11 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
 
   const createAgreement = useMutation({
     mutationFn: async (data: any) => {
-      const url = isEditing ? `/api/agreements/${agreement.id}` : "/api/agreements";
+      const url = isEditing
+        ? `/api/agreements/${agreement.id}`
+        : "/api/agreements";
       const method = isEditing ? "PUT" : "POST";
-      
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -137,7 +146,10 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || `Failed to ${isEditing ? 'update' : 'create'} agreement`);
+        throw new Error(
+          error.error ||
+            `Failed to ${isEditing ? "update" : "create"} agreement`,
+        );
       }
 
       return response.json();
@@ -146,7 +158,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
       queryClient.invalidateQueries({ queryKey: ["/api/agreements"] });
       toast({
         title: "Success",
-        description: isEditing 
+        description: isEditing
           ? "Agreement updated successfully."
           : "Agreement created successfully. Notifications have been sent to CSM and Finance.",
       });
@@ -181,7 +193,11 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
         implementFees: data.implementFees || null,
         monthlySubscriptionFees: data.monthlySubscriptionFees || null,
         changeRequestFees: data.changeRequestFees || null,
-        status: data.status as "active" | "expiring_soon" | "expired" | "renewed",
+        status: data.status as
+          | "active"
+          | "expiring_soon"
+          | "expired"
+          | "renewed",
         autoRenewal: data.autoRenewal,
       };
 
@@ -195,11 +211,13 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Agreement' : 'Add New Agreement'}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Edit Agreement" : "Add New Agreement"}
+          </DialogTitle>
           <DialogDescription>
-            {isEditing 
-              ? 'Update the agreement details and payment terms.'
-              : 'Create a new client agreement with contract details and payment terms.'}
+            {isEditing
+              ? "Update the agreement details and payment terms."
+              : "Create a new client agreement with contract details and payment terms."}
           </DialogDescription>
         </DialogHeader>
 
@@ -212,7 +230,11 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Client *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={isEditing}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isEditing}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a client" />
@@ -239,7 +261,11 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                 <FormItem>
                   <FormLabel>Agreement Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Annual Service Agreement 2024" {...field} disabled={isEditing} />
+                    <Input
+                      placeholder="e.g., Annual Service Agreement 2024"
+                      {...field}
+                      disabled={isEditing}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -261,7 +287,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
@@ -301,7 +327,7 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                             variant="outline"
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
@@ -344,9 +370,15 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                       <SelectItem value="Net 30">Net 30</SelectItem>
                       <SelectItem value="Net 45">Net 45</SelectItem>
                       <SelectItem value="Net 60">Net 60</SelectItem>
-                      <SelectItem value="Airline Specific - 90 Days">Airline Specific - 90 Days</SelectItem>
-                      <SelectItem value="Airline Specific - 120 Days">Airline Specific - 120 Days</SelectItem>
-                      <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
+                      <SelectItem value="Airline Specific - 90 Days">
+                        Airline Specific - 90 Days
+                      </SelectItem>
+                      <SelectItem value="Airline Specific - 120 Days">
+                        Airline Specific - 120 Days
+                      </SelectItem>
+                      <SelectItem value="Due on Receipt">
+                        Due on Receipt
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -355,7 +387,6 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
             />
 
             <div className="space-y-4">
-              <div className="font-semibold text-sm">Multi-Year Service Fees</div>
               <div className="grid grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -413,6 +444,9 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                     </FormItem>
                   )}
                 />
+              </div>
+              <div className="font-semibold text-sm">
+                Multi-Year Service Fees
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <FormField
@@ -524,7 +558,8 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
 
             <div className="bg-muted p-4 rounded-lg">
               <p className="text-sm text-muted-foreground">
-                <strong>Automatic Alerts:</strong> The system will automatically send notifications to CSM and Finance:
+                <strong>Automatic Alerts:</strong> The system will automatically
+                send notifications to CSM and Finance:
               </p>
               <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
                 <li>2 months before contract expiry</li>
@@ -543,9 +578,13 @@ export function AgreementFormDialog({ open, onOpenChange, agreement }: Agreement
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting 
-                  ? (isEditing ? "Updating..." : "Creating...") 
-                  : (isEditing ? "Update Agreement" : "Create Agreement")}
+                {isSubmitting
+                  ? isEditing
+                    ? "Updating..."
+                    : "Creating..."
+                  : isEditing
+                    ? "Update Agreement"
+                    : "Create Agreement"}
               </Button>
             </div>
           </form>
