@@ -32,7 +32,7 @@ export const clientStatusEnum = pgEnum("client_status", ["active", "inactive"]);
 export const industryEnum = pgEnum("industry", ["airlines", "travel_agency", "gds", "ota", "aviation_services"]);
 export const serviceTypeEnum = pgEnum("service_type", ["implementation", "cr", "subscription", "hosting", "others"]);
 export const currencyEnum = pgEnum("currency", ["INR", "USD", "EUR"]);
-export const agreementStatusEnum = pgEnum("agreement_status", ["active", "expiring_soon", "expired", "renewed"]);
+export const agreementStatusEnum = pgEnum("agreement_status", ["active", "inactive", "expiring_soon", "expired", "renewed"]);
 export const invoiceStatusEnum = pgEnum("invoice_status", ["pending", "paid", "overdue", "cancelled"]);
 export const notificationTypeEnum = pgEnum("notification_type", ["payment_reminder", "agreement_renewal", "overdue_payment", "system"]);
 
