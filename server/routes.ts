@@ -7,6 +7,7 @@ import { log } from "./vite";
 import { db } from "./db";
 import { sql, eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
+import { sendEmail } from "./email";
 
 // Simple mock user for development - replace with your own auth logic
 const mockUser = {
@@ -1110,4 +1111,7 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: error.message });
     }
   });
+
+  // Email sending endpoint
+  app.post("/api/email/send", sendEmail);
 }

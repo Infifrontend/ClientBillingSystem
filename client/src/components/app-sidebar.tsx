@@ -9,6 +9,7 @@ import {
   LogOut,
   Briefcase,
   TrendingUp,
+  Mail,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -82,6 +83,13 @@ const menuItems = [
     icon: Users,
     testId: "sidebar-users",
     roles: ["admin"],
+  },
+  {
+    title: "Email",
+    url: "/email",
+    icon: Mail,
+    testId: "sidebar-email",
+    roles: ["admin", "csm"],
   },
 ];
 
