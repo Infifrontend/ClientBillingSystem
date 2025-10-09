@@ -44,9 +44,11 @@ export function InvoiceBulkImportDialog({
     queryKey: ["/api/clients"],
   });
 
-  const { data: services } = useQuery<Service[]>({
+  const { data: servicesResponse } = useQuery<{ data: Service[] }>({
     queryKey: ["/api/services"],
   });
+
+  const services = servicesResponse?.data || [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
