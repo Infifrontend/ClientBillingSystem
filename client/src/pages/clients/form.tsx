@@ -48,6 +48,7 @@ export default function ClientForm() {
     resolver: zodResolver(insertClientSchema),
     defaultValues: {
       name: "",
+      employeeName: "",
       contactPerson: "",
       email: "",
       phone: "",
@@ -63,6 +64,7 @@ export default function ClientForm() {
     if (client) {
       form.reset({
         name: client.name,
+        employeeName: client.employeeName || "",
         contactPerson: client.contactPerson || "",
         email: client.email || "",
         phone: client.phone || "",
@@ -153,6 +155,20 @@ export default function ClientForm() {
                     <FormLabel>Client Name *</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="employeeName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} data-testid="input-employee-name" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
