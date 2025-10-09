@@ -17,6 +17,17 @@ const mockUser = {
   role: "admin" as const,
 };
 
+// Mock isAuthenticated middleware for demonstration purposes
+// Replace with your actual authentication middleware
+const isAuthenticated = (req: Request, res: Response, next: Function) => {
+  // In a real application, you would verify the user's session or token here
+  // For this example, we'll assume the user is authenticated if they reach this point
+  // and attach a mock user to the request.
+  (req as AuthenticatedRequest).user = mockUser;
+  next();
+};
+
+
 export function registerRoutes(app: Express) {
   app.get("/api/auth/user", async (req: any, res: Response) => {
     try {
@@ -240,10 +251,34 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // POST /api/clients - Create a new client
   app.post("/api/clients", requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
-      const validatedData = insertClientSchema.parse(req.body);
-      const client = await storage.createClient(validatedData);
+      const clientData = insertClientSchema.parse(req.body);
+
+      // Check for duplicate client name
+      const existingByName = await storage.getClientByName(clientData.name);
+      if (existingByName) {
+        return res.status(400).json({ error: "A client with this name already exists" });
+      }
+
+      // Check for duplicate email if provided
+      if (clientData.email) {
+        const existingByEmail = await storage.getClientByEmail(clientData.email);
+        if (existingByEmail) {
+          return res.status(400).json({ error: "A client with this email already exists" });
+        }
+      }
+
+      // Check for duplicate GST/Tax ID if provided
+      if (clientData.gstTaxId) {
+        const existingByGstTaxId = await storage.getClientByGstTaxId(clientData.gstTaxId);
+        if (existingByGstTaxId) {
+          return res.status(400).json({ error: "A client with this GST/Tax ID already exists" });
+        }
+      }
+
+      const client = await storage.createClient(clientData);
       res.json(client);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -253,16 +288,39 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  // PATCH /api/clients/:id - Update a client
   app.patch("/api/clients/:id", requirePermission("clients:write"), async (req: Request, res: Response) => {
     try {
-      const existingClient = await storage.getClient(req.params.id);
-      if (!existingClient) {
-        return res.status(404).json({ error: "Client not found" });
+      const updateData = insertClientSchema.partial().parse(req.body);
+
+      // Check for duplicate client name (excluding current client)
+      if (updateData.name) {
+        const existingByName = await storage.getClientByName(updateData.name);
+        if (existingByName && existingByName.id !== req.params.id) {
+          return res.status(400).json({ error: "A client with this name already exists" });
+        }
       }
 
-      const client = await storage.updateClient(req.params.id, req.body);
+      // Check for duplicate email if provided (excluding current client)
+      if (updateData.email) {
+        const existingByEmail = await storage.getClientByEmail(updateData.email);
+        if (existingByEmail && existingByEmail.id !== req.params.id) {
+          return res.status(400).json({ error: "A client with this email already exists" });
+        }
+      }
+
+      // Check for duplicate GST/Tax ID if provided (excluding current client)
+      if (updateData.gstTaxId) {
+        const existingByGstTaxId = await storage.getClientByGstTaxId(updateData.gstTaxId);
+        if (existingByGstTaxId && existingByGstTaxId.id !== req.params.id) {
+          return res.status(400).json({ error: "A client with this GST/Tax ID already exists" });
+        }
+      }
+
+      const client = await storage.updateClient(req.params.id, updateData);
+
       if (!client) {
-        return res.status(500).json({ error: "Failed to update client" });
+        return res.status(404).json({ error: "Client not found" });
       }
 
       res.json(client);

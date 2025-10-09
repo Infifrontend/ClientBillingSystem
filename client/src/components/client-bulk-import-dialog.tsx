@@ -78,8 +78,8 @@ export function ClientBulkImportDialog({
         const row = clientsData[i];
         const rowNumber = i + 2; // +2 because row 1 is header and array is 0-indexed
         
-        // Validate row
-        const validationError = validateClientRow(row);
+        // Validate row (including duplicates within the file)
+        const validationError = validateClientRow(row, clientsData, i);
         if (validationError) {
           results.push({
             row: rowNumber,
@@ -113,11 +113,13 @@ export function ClientBulkImportDialog({
             success: true,
           });
         } catch (error: any) {
+          // Extract the actual error message from the API response
+          const errorMessage = error.error || error.message || 'Failed to create client';
           results.push({
             row: rowNumber,
             name: row.name,
             success: false,
-            error: error.message || 'Failed to create client',
+            error: errorMessage,
           });
         }
         

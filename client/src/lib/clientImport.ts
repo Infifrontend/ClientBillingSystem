@@ -95,7 +95,7 @@ export const parseClientFile = (file: File): Promise<ClientImportRow[]> => {
   });
 };
 
-export const validateClientRow = (row: ClientImportRow): string | null => {
+export const validateClientRow = (row: ClientImportRow, allRows?: ClientImportRow[], currentIndex?: number): string | null => {
   if (!row.name || row.name.trim() === '') {
     return 'Client name is required';
   }
@@ -116,6 +116,37 @@ export const validateClientRow = (row: ClientImportRow): string | null => {
   
   if (row.email && !row.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
     return 'Invalid email format';
+  }
+  
+  // Check for duplicates within the same import file
+  if (allRows && currentIndex !== undefined) {
+    // Check for duplicate name in file
+    const duplicateName = allRows.findIndex((r, idx) => 
+      idx !== currentIndex && r.name.trim().toLowerCase() === row.name.trim().toLowerCase()
+    );
+    if (duplicateName !== -1) {
+      return `Duplicate name found in row ${duplicateName + 2}`;
+    }
+    
+    // Check for duplicate email in file
+    if (row.email) {
+      const duplicateEmail = allRows.findIndex((r, idx) => 
+        idx !== currentIndex && r.email?.trim().toLowerCase() === row.email.trim().toLowerCase()
+      );
+      if (duplicateEmail !== -1) {
+        return `Duplicate email found in row ${duplicateEmail + 2}`;
+      }
+    }
+    
+    // Check for duplicate GST/Tax ID in file
+    if (row.gstTaxId) {
+      const duplicateGstTaxId = allRows.findIndex((r, idx) => 
+        idx !== currentIndex && r.gstTaxId?.trim() === row.gstTaxId.trim()
+      );
+      if (duplicateGstTaxId !== -1) {
+        return `Duplicate GST/Tax ID found in row ${duplicateGstTaxId + 2}`;
+      }
+    }
   }
   
   return null;

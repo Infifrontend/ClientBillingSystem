@@ -167,6 +167,34 @@ export class DrizzleStorage implements IStorage {
     return result[0];
   }
 
+  async getClientById(id: string): Promise<Client | undefined> {
+    const result = await db.query.clients.findFirst({
+      where: eq(schema.clients.id, id),
+    });
+    return result;
+  }
+
+  async getClientByName(name: string): Promise<Client | undefined> {
+    const result = await db.query.clients.findFirst({
+      where: eq(schema.clients.name, name),
+    });
+    return result;
+  }
+
+  async getClientByEmail(email: string): Promise<Client | undefined> {
+    const result = await db.query.clients.findFirst({
+      where: eq(schema.clients.email, email),
+    });
+    return result;
+  }
+
+  async getClientByGstTaxId(gstTaxId: string): Promise<Client | undefined> {
+    const result = await db.query.clients.findFirst({
+      where: eq(schema.clients.gstTaxId, gstTaxId),
+    });
+    return result;
+  }
+
   async createClient(client: InsertClient): Promise<Client> {
     const result = await db.insert(schema.clients).values(client).returning();
     return result[0];
