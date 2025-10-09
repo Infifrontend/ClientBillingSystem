@@ -20,7 +20,7 @@ import type { Client } from "@shared/schema";
 export default function Dashboard() {
   const { toast } = useToast();
   const [selectedClientId, setSelectedClientId] = useState<string>("all");
-  const [dateRangeType, setDateRangeType] = useState<string>("last-30-days");
+  const [dateRangeType, setDateRangeType] = useState<string>("yesterday");
   const [customDateRange, setCustomDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -98,7 +98,7 @@ export default function Dashboard() {
   const getDateRangeLabel = () => {
     if (dateRangeType === "custom" && customDateRange.from) {
       if (customDateRange.to) {
-        return `${format(customDateRange.from, "MMM dd, yyyy")} - ${format(customDateRange.to, "MMM dd, yyyy")}`;
+        return `${format(customDateRange.from, "MMM dd")} - ${format(customDateRange.to, "MMM dd, yyyy")}`;
       }
       return format(customDateRange.from, "MMM dd, yyyy");
     }
@@ -112,152 +112,94 @@ export default function Dashboard() {
       "this-month": "This Month",
       "this-year": "This Year",
       "last-year": "Last Year",
-      "custom": "Custom Date Range"
+      "custom": "Custom"
     };
     
-    return labels[dateRangeType] || "Select date range";
+    return labels[dateRangeType] || "Yesterday";
   };
 
   return (
     <div className="space-y-0">
-      <div className="border-b bg-white px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="border-b bg-white px-6 py-5">
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-1">Dashboard</h1>
             <p className="text-sm text-muted-foreground">Overview of your client management and billing operations</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                Filter by Client:
-              </label>
-              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                <SelectTrigger className="w-[250px]">
-                  <SelectValue placeholder="All Clients" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Clients</SelectItem>
-                  {clients?.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                Date Range:
-              </label>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-1">
+            <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+              Filter by Client:
+            </label>
+            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="All Clients" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Clients</SelectItem>
+                {clients?.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+              Date Range:
+            </label>
+            <Select value={dateRangeType} onValueChange={(value) => {
+              if (value !== "custom") {
+                setDateRangeType(value);
+              }
+            }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue>
+                  {getDateRangeLabel()}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
+                <SelectItem value="last-week">Last Week</SelectItem>
+                <SelectItem value="this-week">This Week</SelectItem>
+                <SelectItem value="last-month">Last Month</SelectItem>
+                <SelectItem value="this-month">This Month</SelectItem>
+                <SelectItem value="this-year">This Year</SelectItem>
+                <SelectItem value="last-year">Last Year</SelectItem>
+                <SelectItem value="custom">Date Range (Custom)</SelectItem>
+              </SelectContent>
+            </Select>
+            {dateRangeType === "custom" && (
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-[280px] justify-between",
-                      !dateRangeType && "text-muted-foreground"
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      {getDateRangeLabel()}
-                    </span>
+                  <Button variant="outline" size="sm">
+                    <CalendarIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
-                  <div className="p-3 space-y-1">
-                    <Button
-                      variant={dateRangeType === "today" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("today")}
-                    >
-                      Today
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "yesterday" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("yesterday")}
-                    >
-                      Yesterday
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "last-week" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("last-week")}
-                    >
-                      Last Week
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "this-week" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("this-week")}
-                    >
-                      This Week
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "last-month" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("last-month")}
-                    >
-                      Last Month
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "this-month" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("this-month")}
-                    >
-                      This Month
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "this-year" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("this-year")}
-                    >
-                      This Year
-                    </Button>
-                    <Button
-                      variant={dateRangeType === "last-year" ? "default" : "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => setDateRangeType("last-year")}
-                    >
-                      Last Year
-                    </Button>
-                    <div className="border-t pt-1 mt-1">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={dateRangeType === "custom" ? "default" : "ghost"}
-                            className="w-full justify-start"
-                          >
-                            Date Range (Custom)
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start" side="right">
-                          <Calendar
-                            mode="range"
-                            selected={{ from: customDateRange.from, to: customDateRange.to }}
-                            onSelect={(range) => {
-                              setCustomDateRange({
-                                from: range?.from,
-                                to: range?.to
-                              });
-                              setDateRangeType("custom");
-                            }}
-                            numberOfMonths={2}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
+                  <Calendar
+                    mode="range"
+                    selected={{ from: customDateRange.from, to: customDateRange.to }}
+                    onSelect={(range) => {
+                      setCustomDateRange({
+                        from: range?.from,
+                        to: range?.to
+                      });
+                    }}
+                    numberOfMonths={2}
+                    initialFocus
+                  />
                 </PopoverContent>
               </Popover>
-            </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="p-6 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
             title="Total Clients"
             value={stats?.totalClients || 0}
@@ -288,7 +230,7 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Revenue Trends</CardTitle>
@@ -343,7 +285,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-2">
               <div>
