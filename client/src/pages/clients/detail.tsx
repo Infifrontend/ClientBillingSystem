@@ -194,22 +194,43 @@ export default function ClientDetail() {
                       data-testid={`service-${service.id}`}
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold capitalize">{service.serviceType.replace(/_/g, ' ')}</h4>
                           {service.description && (
                             <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                           )}
+                          {client.employeeName && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              <span className="font-medium">Employee:</span> {client.employeeName}
+                            </p>
+                          )}
                         </div>
-                        <Badge variant="outline">
-                          ₹{service.amount}
-                        </Badge>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge variant="outline">
+                            ₹{service.amount}
+                          </Badge>
+                          {service.status && (
+                            <Badge 
+                              variant={service.status === "paid" ? "default" : "secondary"}
+                              className={service.status === "paid" ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"}
+                            >
+                              {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex gap-4 text-sm text-muted-foreground">
+                      <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
                         {service.startDate && (
                           <span>Start: {new Date(service.startDate).toLocaleDateString()}</span>
                         )}
                         {service.goLiveDate && (
                           <span>Go-Live: {new Date(service.goLiveDate).toLocaleDateString()}</span>
+                        )}
+                        {service.invoiceNumber && (
+                          <span>Invoice: {service.invoiceNumber}</span>
+                        )}
+                        {service.invoiceDate && (
+                          <span>Invoice Date: {new Date(service.invoiceDate).toLocaleDateString()}</span>
                         )}
                       </div>
                     </div>

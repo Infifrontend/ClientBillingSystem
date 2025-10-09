@@ -47,6 +47,9 @@ interface ServiceFormData {
   billingCycle: string;
   isRecurring: boolean;
   assignedCsmId?: string;
+  invoiceNumber?: string;
+  invoiceDate?: Date;
+  status: string;
 }
 
 interface ServiceFormDialogProps {
@@ -83,6 +86,9 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
       billingCycle: service.billingCycle || "",
       isRecurring: service.isRecurring || false,
       assignedCsmId: service.assignedCsmId || "",
+      invoiceNumber: service.invoiceNumber || "",
+      invoiceDate: service.invoiceDate ? new Date(service.invoiceDate) : undefined,
+      status: service.status || "pending",
     } : {
       clientId: "",
       serviceType: "",
@@ -92,6 +98,8 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
       billingCycle: "",
       isRecurring: false,
       assignedCsmId: "",
+      invoiceNumber: "",
+      status: "pending",
     },
   });
 
@@ -109,6 +117,9 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
         billingCycle: service.billingCycle || "",
         isRecurring: service.isRecurring || false,
         assignedCsmId: service.assignedCsmId || "",
+        invoiceNumber: service.invoiceNumber || "",
+        invoiceDate: service.invoiceDate ? new Date(service.invoiceDate) : undefined,
+        status: service.status || "pending",
       });
     } else if (!service && open) {
       form.reset({
@@ -120,6 +131,8 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
         billingCycle: "",
         isRecurring: false,
         assignedCsmId: "",
+        invoiceNumber: "",
+        status: "pending",
       });
     }
   }, [service, open, form]);
@@ -219,6 +232,9 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
         billingCycle: data.billingCycle,
         isRecurring: data.isRecurring,
         assignedCsmId: data.assignedCsmId || null,
+        invoiceNumber: data.invoiceNumber || null,
+        invoiceDate: data.invoiceDate?.toISOString() || null,
+        status: data.status,
       };
 
       if (service) {
@@ -520,6 +536,87 @@ export function ServiceFormDialog({ open, onOpenChange, service }: ServiceFormDi
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="invoiceNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Invoice Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="INV-2024-001"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="invoiceDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Invoice Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="status"
+              rules={{ required: "Status is required" }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />

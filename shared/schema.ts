@@ -80,6 +80,9 @@ export const services = pgTable("services", {
   isRecurring: boolean("is_recurring").default(false),
   assignedCsmId: varchar("assigned_csm_id").references(() => users.id),
   documentPath: varchar("document_path"),
+  invoiceNumber: varchar("invoice_number", { length: 100 }),
+  invoiceDate: timestamp("invoice_date"),
+  status: varchar("status", { length: 20 }).default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
