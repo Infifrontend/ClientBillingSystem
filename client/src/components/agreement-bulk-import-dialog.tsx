@@ -118,6 +118,10 @@ export function AgreementBulkImportDialog({
         const year3 = parseFloat(row.year3Fee || '0') || 0;
         const totalValue = year1 + year2 + year3;
 
+        const implementFees = row.implementFees ? (typeof row.implementFees === 'number' ? row.implementFees : parseFloat(String(row.implementFees))) : null;
+        const monthlySubscriptionFees = row.monthlySubscriptionFees ? (typeof row.monthlySubscriptionFees === 'number' ? row.monthlySubscriptionFees : parseFloat(String(row.monthlySubscriptionFees))) : null;
+        const changeRequestFees = row.changeRequestFees ? (typeof row.changeRequestFees === 'number' ? row.changeRequestFees : parseFloat(String(row.changeRequestFees))) : null;
+
         const agreementData = {
           clientId: client.id,
           agreementName: row.agreementName.trim(),
@@ -125,9 +129,10 @@ export function AgreementBulkImportDialog({
           endDate: new Date(row.endDate).toISOString(),
           value: totalValue.toString(),
           currency: row.currency.toUpperCase(),
-          implementFees: row.implementFees ? parseFloat(row.implementFees) : null,
-          monthlySubscriptionFees: row.monthlySubscriptionFees ? parseFloat(row.monthlySubscriptionFees) : null,
-          changeRequestFees: row.changeRequestFees ? parseFloat(row.changeRequestFees) : null,
+          implementFees: (implementFees && !isNaN(implementFees)) ? implementFees : null,
+          monthlySubscriptionFees: (monthlySubscriptionFees && !isNaN(monthlySubscriptionFees)) ? monthlySubscriptionFees : null,
+          changeRequestFees: (changeRequestFees && !isNaN(changeRequestFees)) ? changeRequestFees : null,
+          paymentTerms: row.paymentTerms?.trim() || null,
           status: row.status?.toLowerCase() || 'active',
           autoRenewal: row.autoRenewal?.toLowerCase() === 'true',
         };
