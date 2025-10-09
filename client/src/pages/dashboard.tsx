@@ -34,7 +34,7 @@ export default function Dashboard() {
   });
 
   const { data: stats } = useQuery<any>({
-    queryKey: ["/api/dashboard/stats", selectedClientId],
+    queryKey: ["/api/dashboard/stats", selectedClientId, dateRangeType, customDateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedClientId && selectedClientId !== "all") {
@@ -49,7 +49,7 @@ export default function Dashboard() {
   });
 
   const { data: revenueData } = useQuery<any>({
-    queryKey: ["/api/dashboard/revenue-trends", selectedClientId],
+    queryKey: ["/api/dashboard/revenue-trends", selectedClientId, dateRangeType, customDateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedClientId && selectedClientId !== "all") {
@@ -64,7 +64,7 @@ export default function Dashboard() {
   });
 
   const { data: clientDistribution } = useQuery<any>({
-    queryKey: ["/api/dashboard/client-distribution", selectedClientId],
+    queryKey: ["/api/dashboard/client-distribution", selectedClientId, dateRangeType, customDateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedClientId && selectedClientId !== "all") {
@@ -79,7 +79,7 @@ export default function Dashboard() {
   });
 
   const { data: upcomingRenewals } = useQuery<any>({
-    queryKey: ["/api/dashboard/upcoming-renewals", selectedClientId],
+    queryKey: ["/api/dashboard/upcoming-renewals", selectedClientId, dateRangeType, customDateRange],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedClientId && selectedClientId !== "all") {
@@ -121,19 +121,14 @@ export default function Dashboard() {
   return (
     <div className="space-y-0">
       <div className="border-b bg-white px-6 py-5">
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-1">Dashboard</h1>
             <p className="text-sm text-muted-foreground">Overview of your client management and billing operations</p>
           </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 flex-1">
-            <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-              Filter by Client:
-            </label>
+          <div className="flex items-center gap-3">
             <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All Clients" />
               </SelectTrigger>
               <SelectContent>
@@ -145,15 +140,8 @@ export default function Dashboard() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-              Date Range:
-            </label>
             <Select value={dateRangeType} onValueChange={(value) => {
-              if (value !== "custom") {
-                setDateRangeType(value);
-              }
+              setDateRangeType(value);
             }}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue>
