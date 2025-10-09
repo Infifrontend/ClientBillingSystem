@@ -76,6 +76,13 @@ const menuItems = [
     testId: "sidebar-insights",
     roles: ["admin", "csm", "finance", "viewer"],
   },
+  {
+    title: "User Management",
+    url: "/users",
+    icon: Users,
+    testId: "sidebar-users",
+    roles: ["admin"],
+  },
 ];
 
 export function AppSidebar() {
