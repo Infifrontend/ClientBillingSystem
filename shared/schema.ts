@@ -36,14 +36,21 @@ export const agreementStatusEnum = pgEnum("agreement_status", ["active", "inacti
 export const invoiceStatusEnum = pgEnum("invoice_status", ["pending", "paid", "overdue", "cancelled"]);
 export const notificationTypeEnum = pgEnum("notification_type", ["payment_reminder", "agreement_renewal", "overdue_payment", "system"]);
 
+// User status enum
+export const userStatusEnum = pgEnum("user_status", ["active", "inactive", "pending"]);
+
 // Users table (IMPORTANT: Required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
+  username: varchar("username").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: userRoleEnum("role").default("viewer").notNull(),
+  department: varchar("department", { length: 255 }),
+  status: userStatusEnum("status").default("active").notNull(),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

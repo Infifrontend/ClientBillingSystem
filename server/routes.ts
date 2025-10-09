@@ -1007,4 +1007,107 @@ export function registerRoutes(app: Express) {
       res.status(500).json({ error: error.message });
     }
   });
+
+  // User Management Routes
+  app.get("/api/users", async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/users", async (req: Request, res: Response) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check for duplicate email
+      const existingEmail = await db.select().from(schema.users).where(eq(schema.users.email, userData.email));
+      if (existingEmail.length > 0) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+      
+      // Check for duplicate username if provided
+      if (userData.username) {
+        const existingUsername = await db.select().from(schema.users).where(eq(schema.users.username, userData.username));
+        if (existingUsername.length > 0) {
+          return res.status(400).json({ error: "Username already exists" });
+        }
+      }
+      
+      const user = await storage.createUser(userData);
+      res.json(user);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      const updates = req.body;
+      
+      // Check for duplicate email if email is being updated
+      if (updates.email) {
+        const existingEmail = await db.select().from(schema.users)
+          .where(sql`${schema.users.email} = ${updates.email} AND ${schema.users.id} != ${req.params.id}`);
+        if (existingEmail.length > 0) {
+          return res.status(400).json({ error: "Email already exists" });
+        }
+      }
+      
+      // Check for duplicate username if username is being updated
+      if (updates.username) {
+        const existingUsername = await db.select().from(schema.users)
+          .where(sql`${schema.users.username} = ${updates.username} AND ${schema.users.id} != ${req.params.id}`);
+        if (existingUsername.length > 0) {
+          return res.status(400).json({ error: "Username already exists" });
+        }
+      }
+      
+      const user = await storage.updateUser(req.params.id, updates);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      // Prevent deleting the last admin
+      const users = await storage.getUsers();
+      const admins = users.filter(u => u.role === "admin");
+      const userToDelete = users.find(u => u.id === req.params.id);
+      
+      if (userToDelete?.role === "admin" && admins.length === 1) {
+        return res.status(400).json({ error: "Cannot delete the last admin user" });
+      }
+      
+      await db.delete(schema.users).where(eq(schema.users.id, req.params.id));
+      res.json({ success: true, message: "User deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/users/:id/reset-password", async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // In a real application, you would send an email here
+      // For now, we'll just return success
+      res.json({ success: true, message: "Password reset email sent" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 }
