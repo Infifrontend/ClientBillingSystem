@@ -133,13 +133,13 @@ export function ServiceBulkImportDialog({
           description: row.description?.trim() || null,
           amount: row.amount,
           currency: row.currency.toUpperCase(),
-          startDate: row.startDate ? new Date(row.startDate).toISOString() : null,
-          goLiveDate: row.goLiveDate ? new Date(row.goLiveDate).toISOString() : null,
+          startDate: row.startDate && row.startDate.trim() ? new Date(row.startDate).toISOString() : null,
+          goLiveDate: row.goLiveDate && row.goLiveDate.trim() ? new Date(row.goLiveDate).toISOString() : null,
           billingCycle: row.billingCycle?.toLowerCase() || null,
           isRecurring: row.isRecurring?.toLowerCase() === 'true',
           assignedCsmId,
           invoiceNumber: row.invoiceNumber?.trim() || null,
-          invoiceDate: row.invoiceDate ? new Date(row.invoiceDate).toISOString() : null,
+          invoiceDate: row.invoiceDate && row.invoiceDate.trim() ? new Date(row.invoiceDate).toISOString() : null,
           status: row.status?.toLowerCase() || 'pending',
         };
 

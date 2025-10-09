@@ -46,8 +46,8 @@ export const generateSampleServiceSheet = () => {
       billingCycle: 'monthly',
       isRecurring: 'true',
       assignedCsmEmail: 'admin@example.com',
-      invoiceNumber: '',
-      invoiceDate: '',
+      invoiceNumber: 'INV-2024-002',
+      invoiceDate: '2024-01-01',
       status: 'pending'
     }
   ];
