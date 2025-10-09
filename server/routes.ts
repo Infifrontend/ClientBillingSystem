@@ -353,6 +353,7 @@ export function registerRoutes(app: Express) {
         ...req.body,
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
         goLiveDate: req.body.goLiveDate ? new Date(req.body.goLiveDate) : undefined,
+        invoiceDate: req.body.invoiceDate ? new Date(req.body.invoiceDate) : undefined,
       };
 
       const service = await storage.updateService(req.params.id, serviceData);
