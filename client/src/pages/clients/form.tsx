@@ -185,57 +185,54 @@ export default function ClientForm() {
                 control={form.control}
                 name="employeeName"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem className="flex flex-col relative">
                     <FormLabel>Employee Name</FormLabel>
-                    <Popover open={employeePopoverOpen} onOpenChange={setEmployeePopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            data-testid="input-employee-name"
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setEmployeeSearch(e.target.value);
-                              if (e.target.value.length >= 3) {
-                                setEmployeePopoverOpen(true);
-                              }
-                            }}
-                            placeholder="Type at least 3 characters..."
-                          />
-                        </FormControl>
-                      </PopoverTrigger>
-                      {employeeSearch.length >= 3 && (
-                        <PopoverContent className="w-[300px] p-0" align="start">
-                          <Command>
-                            <CommandInput placeholder="Search employees..." value={employeeSearch} />
-                            <CommandList>
-                              <CommandEmpty>No employees found.</CommandEmpty>
-                              <CommandGroup>
-                                {employees?.map((employee) => (
-                                  <CommandItem
-                                    key={employee}
-                                    value={employee}
-                                    onSelect={() => {
-                                      field.onChange(employee);
-                                      setEmployeeSearch(employee);
-                                      setEmployeePopoverOpen(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === employee ? "opacity-100" : "opacity-0"
-                                      )}
-                                    />
-                                    {employee}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      )}
-                    </Popover>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        data-testid="input-employee-name"
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          setEmployeeSearch(e.target.value);
+                          if (e.target.value.length >= 3) {
+                            setEmployeePopoverOpen(true);
+                          } else {
+                            setEmployeePopoverOpen(false);
+                          }
+                        }}
+                        placeholder="Type employee name..."
+                      />
+                    </FormControl>
+                    {employeePopoverOpen && employeeSearch.length >= 3 && (
+                      <div className="absolute top-full left-0 z-50 w-full mt-1 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
+                        <Command>
+                          <CommandList>
+                            <CommandEmpty>No employees found.</CommandEmpty>
+                            <CommandGroup>
+                              {employees?.map((employee) => (
+                                <CommandItem
+                                  key={employee}
+                                  value={employee}
+                                  onSelect={() => {
+                                    field.onChange(employee);
+                                    setEmployeeSearch(employee);
+                                    setEmployeePopoverOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === employee ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {employee}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
