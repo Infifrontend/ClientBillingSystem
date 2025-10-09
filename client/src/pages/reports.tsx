@@ -25,6 +25,10 @@ import {
   DollarSign,
   Calendar as CalendarIcon,
   X,
+  TrendingUp,
+  MapPin,
+  Package,
+  Briefcase,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -418,6 +422,120 @@ export default function Reports() {
 
   const filteredRevenueData = [...dynamicRevenueData, ...filteredStaticRevenue];
 
+  // Sales Report Data - Total sales by month/quarter
+  const salesReportData = clients
+    .filter((client) => {
+      if (selectedClients.length > 0 && !selectedClients.includes(client.id)) {
+        return false;
+      }
+      return true;
+    })
+    .map((client) => {
+      const clientInvoices = invoices.filter(
+        (inv: Invoice) => inv.clientId === client.id && inv.status === "paid"
+      );
+
+      const totalSales = clientInvoices.reduce(
+        (sum, inv: Invoice) => sum + Number(inv.amount),
+        0
+      );
+
+      const invoiceCount = clientInvoices.length;
+
+      return {
+        id: client.id,
+        clientName: client.name,
+        totalSales,
+        invoiceCount,
+        averageInvoiceValue: invoiceCount > 0 ? totalSales / invoiceCount : 0,
+      };
+    })
+    .filter((item) => item.totalSales > 0);
+
+  // Geography Report Data - Revenue by region
+  const geographyReportData = clients
+    .filter((client) => {
+      if (selectedClients.length > 0 && !selectedClients.includes(client.id)) {
+        return false;
+      }
+      return true;
+    })
+    .reduce((acc: any[], client) => {
+      const region = client.region || "Unknown";
+      const clientInvoices = invoices.filter(
+        (inv: Invoice) => inv.clientId === client.id && inv.status === "paid"
+      );
+
+      const revenue = clientInvoices.reduce(
+        (sum, inv: Invoice) => sum + Number(inv.amount),
+        0
+      );
+
+      const existingRegion = acc.find((item) => item.region === region);
+      if (existingRegion) {
+        existingRegion.revenue += revenue;
+        existingRegion.clientCount += 1;
+      } else {
+        acc.push({
+          id: region,
+          region,
+          revenue,
+          clientCount: 1,
+        });
+      }
+      return acc;
+    }, [])
+    .filter((item) => item.revenue > 0);
+
+  // Product-wise Report Data - Revenue by product/service category
+  const productReportData = services
+    .filter((service: Service) => {
+      if (selectedClients.length > 0 && !selectedClients.includes(service.clientId)) {
+        return false;
+      }
+      return true;
+    })
+    .reduce((acc: any[], service: Service) => {
+      const serviceType = service.serviceType || "Others";
+      const amount = Number(service.amount);
+
+      const existingProduct = acc.find((item) => item.productType === serviceType);
+      if (existingProduct) {
+        existingProduct.revenue += amount;
+        existingProduct.serviceCount += 1;
+      } else {
+        acc.push({
+          id: serviceType,
+          productType: serviceType,
+          revenue: amount,
+          serviceCount: 1,
+        });
+      }
+      return acc;
+    }, [])
+    .filter((item) => item.revenue > 0);
+
+  // Service Type Report Data - Detailed breakdown by service type
+  const serviceTypeReportData = services
+    .filter((service: Service) => {
+      if (selectedClients.length > 0 && !selectedClients.includes(service.clientId)) {
+        return false;
+      }
+      return true;
+    })
+    .map((service: Service) => {
+      const client = clients.find((c) => c.id === service.clientId);
+      return {
+        id: service.id,
+        clientName: client?.name || "Unknown",
+        serviceType: service.serviceType,
+        amount: Number(service.amount),
+        currency: service.currency,
+        billingCycle: service.billingCycle || "N/A",
+        status: service.status,
+      };
+    });
+
   if (isLoading || !isAuthenticated || invoicesLoading || servicesLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -644,14 +762,14 @@ export default function Reports() {
         </Sheet>
 
         <Tabs defaultValue="outstanding" onValueChange={setReportType}>
-          <TabsList className="grid w-full max-w-md grid-cols-2 h-11">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6 h-11">
             <TabsTrigger
               value="outstanding"
               data-testid="tab-outstanding"
               className="gap-2"
             >
               <FileText className="h-4 w-4" />
-              Outstanding Report
+              Outstanding
             </TabsTrigger>
             <TabsTrigger
               value="revenue"
@@ -659,7 +777,39 @@ export default function Reports() {
               className="gap-2"
             >
               <DollarSign className="h-4 w-4" />
-              Revenue Report
+              Revenue
+            </TabsTrigger>
+            <TabsTrigger
+              value="sales"
+              data-testid="tab-sales"
+              className="gap-2"
+            >
+              <TrendingUp className="h-4 w-4" />
+              Sales
+            </TabsTrigger>
+            <TabsTrigger
+              value="geography"
+              data-testid="tab-geography"
+              className="gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              Geography
+            </TabsTrigger>
+            <TabsTrigger
+              value="product"
+              data-testid="tab-product"
+              className="gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Product-wise
+            </TabsTrigger>
+            <TabsTrigger
+              value="service-type"
+              data-testid="tab-service-type"
+              className="gap-2"
+            >
+              <Briefcase className="h-4 w-4" />
+              Service Type
             </TabsTrigger>
           </TabsList>
 
@@ -833,6 +983,297 @@ export default function Reports() {
                             </TableCell>
                             <TableCell className="text-muted-foreground">
                               {item.location}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="sales" className="mt-6">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle>Sales Report</CardTitle>
+                <CardDescription>
+                  Total sales performance by client
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="font-semibold">Client</TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Total Sales
+                        </TableHead>
+                        <TableHead className="text-center font-semibold">
+                          Invoice Count
+                        </TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Average Invoice Value
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {salesReportData.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            No sales data found matching the selected filters
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        salesReportData.map((item: any) => (
+                          <TableRow
+                            key={item.id}
+                            data-testid={`sales-item-${item.id}`}
+                            className="hover:bg-muted/30"
+                          >
+                            <TableCell className="font-medium">
+                              {item.clientName}
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-semibold text-green-600 dark:text-green-500">
+                              ₹{item.totalSales.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="secondary" className="font-medium">
+                                {item.invoiceCount}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ₹{Math.round(item.averageInvoiceValue).toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="geography" className="mt-6">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle>Geography Report</CardTitle>
+                <CardDescription>
+                  Revenue distribution by geographical region
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="font-semibold">Region</TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Total Revenue
+                        </TableHead>
+                        <TableHead className="text-center font-semibold">
+                          Client Count
+                        </TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Average Revenue per Client
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {geographyReportData.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            No geography data found matching the selected filters
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        geographyReportData.map((item: any) => (
+                          <TableRow
+                            key={item.id}
+                            data-testid={`geography-item-${item.id}`}
+                            className="hover:bg-muted/30"
+                          >
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                {item.region}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-semibold text-blue-600 dark:text-blue-500">
+                              ₹{item.revenue.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="secondary" className="font-medium">
+                                {item.clientCount}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ₹{Math.round(item.revenue / item.clientCount).toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="product" className="mt-6">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle>Product-wise Report</CardTitle>
+                <CardDescription>
+                  Revenue breakdown by product/service category
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="font-semibold">Product Type</TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Total Revenue
+                        </TableHead>
+                        <TableHead className="text-center font-semibold">
+                          Service Count
+                        </TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Average Revenue
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productReportData.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            No product data found matching the selected filters
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        productReportData.map((item: any) => (
+                          <TableRow
+                            key={item.id}
+                            data-testid={`product-item-${item.id}`}
+                            className="hover:bg-muted/30"
+                          >
+                            <TableCell className="font-medium">
+                              <Badge
+                                variant="outline"
+                                className="font-medium capitalize"
+                              >
+                                {item.productType.replace(/_/g, " ")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-semibold text-purple-600 dark:text-purple-500">
+                              ₹{item.revenue.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant="secondary" className="font-medium">
+                                {item.serviceCount}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ₹{Math.round(item.revenue / item.serviceCount).toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="service-type" className="mt-6">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle>Service Type Report</CardTitle>
+                <CardDescription>
+                  Detailed breakdown of all services by type
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="font-semibold">Client</TableHead>
+                        <TableHead className="font-semibold">Service Type</TableHead>
+                        <TableHead className="text-right font-semibold">
+                          Amount
+                        </TableHead>
+                        <TableHead className="font-semibold">Billing Cycle</TableHead>
+                        <TableHead className="text-center font-semibold">
+                          Status
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {serviceTypeReportData.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={5}
+                            className="text-center py-8 text-muted-foreground"
+                          >
+                            No service type data found matching the selected filters
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        serviceTypeReportData.map((item: any) => (
+                          <TableRow
+                            key={item.id}
+                            data-testid={`service-type-item-${item.id}`}
+                            className="hover:bg-muted/30"
+                          >
+                            <TableCell className="font-medium">
+                              {item.clientName}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className="font-medium capitalize"
+                              >
+                                {item.serviceType.replace(/_/g, " ")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-semibold">
+                              {item.currency === "INR"
+                                ? "₹"
+                                : item.currency === "USD"
+                                  ? "$"
+                                  : "€"}
+                              {item.amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="capitalize">
+                              {item.billingCycle.replace(/-/g, " ")}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge
+                                variant={
+                                  item.status === "paid"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                                className="capitalize"
+                              >
+                                {item.status}
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         ))
