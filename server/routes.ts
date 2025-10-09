@@ -1,10 +1,11 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "./storage";
-import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema } from "@shared/schema";
+import { insertClientSchema, insertServiceSchema, insertAgreementSchema, insertInvoiceSchema, insertUserSchema, clients } from "@shared/schema";
 import { z } from "zod";
 import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
 import { log } from "./vite";
-import { db, clients, sql } from "./db";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 // Simple mock user for development - replace with your own auth logic
 const mockUser = {
