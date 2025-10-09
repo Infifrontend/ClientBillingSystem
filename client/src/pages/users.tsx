@@ -319,8 +319,9 @@ export default function UsersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="overflow-visible">
+          <div className="w-full overflow-visible">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>User Name</TableHead>
@@ -418,6 +419,7 @@ export default function UsersPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
