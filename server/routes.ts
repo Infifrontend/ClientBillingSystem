@@ -281,48 +281,72 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Client not found" });
       }
 
-      // Delete related records first
+      // Delete related records first - wrap in try-catch for each type
       try {
-        // Delete CR invoices
-        const crInvoices = await storage.getCrInvoices({ clientId: req.params.id });
-        for (const invoice of crInvoices) {
-          await storage.deleteCrInvoice(invoice.id);
+        // Delete CR invoices (if any)
+        try {
+          const crInvoices = await storage.getCrInvoices({ clientId: req.params.id });
+          for (const invoice of crInvoices) {
+            await storage.deleteCrInvoice(invoice.id);
+          }
+        } catch (err) {
+          console.error('[WARN] Error deleting CR invoices:', err);
         }
 
-        // Delete notifications
-        await db.delete(schema.notifications).where(eq(schema.notifications.clientId, req.params.id));
-
-        // Delete AI insights
-        await db.delete(schema.aiInsights).where(eq(schema.aiInsights.clientId, req.params.id));
-
-        // Delete invoices
-        const invoices = await storage.getInvoices({ clientId: req.params.id });
-        for (const invoice of invoices) {
-          await storage.deleteInvoice(invoice.id);
+        // Delete notifications (if any)
+        try {
+          await db.delete(schema.notifications).where(eq(schema.notifications.clientId, req.params.id));
+        } catch (err) {
+          console.error('[WARN] Error deleting notifications:', err);
         }
 
-        // Delete agreements
-        const agreements = await storage.getAgreements({ clientId: req.params.id });
-        for (const agreement of agreements) {
-          await storage.deleteAgreement(agreement.id);
+        // Delete AI insights (if any)
+        try {
+          await db.delete(schema.aiInsights).where(eq(schema.aiInsights.clientId, req.params.id));
+        } catch (err) {
+          console.error('[WARN] Error deleting AI insights:', err);
         }
 
-        // Delete services
-        const services = await storage.getServices({ clientId: req.params.id });
-        for (const service of services) {
-          await storage.deleteService(service.id);
+        // Delete invoices (if any)
+        try {
+          const invoices = await storage.getInvoices({ clientId: req.params.id });
+          for (const invoice of invoices) {
+            await storage.deleteInvoice(invoice.id);
+          }
+        } catch (err) {
+          console.error('[WARN] Error deleting invoices:', err);
+        }
+
+        // Delete agreements (if any)
+        try {
+          const agreements = await storage.getAgreements({ clientId: req.params.id });
+          for (const agreement of agreements) {
+            await storage.deleteAgreement(agreement.id);
+          }
+        } catch (err) {
+          console.error('[WARN] Error deleting agreements:', err);
+        }
+
+        // Delete services (if any)
+        try {
+          const services = await storage.getServices({ clientId: req.params.id });
+          for (const service of services) {
+            await storage.deleteService(service.id);
+          }
+        } catch (err) {
+          console.error('[WARN] Error deleting services:', err);
         }
 
         // Finally delete the client
         const success = await storage.deleteClient(req.params.id);
         if (!success) {
-          return res.status(500).json({ error: "Failed to delete client" });
+          throw new Error("Client deletion from database failed");
         }
 
-        res.json({ success: true, message: "Client and all related records deleted successfully" });
+        res.json({ success: true, message: "Client deleted successfully" });
       } catch (deleteError: any) {
-        console.error('[ERROR] Failed to delete client and related records:', deleteError);
-        return res.status(500).json({ error: "Failed to delete client: " + deleteError.message });
+        console.error('[ERROR] Failed to delete client:', deleteError);
+        return res.status(500).json({ error: deleteError.message || "Failed to delete client" });
       }
     } catch (error: any) {
       console.error('[ERROR] Delete client error:', error);
