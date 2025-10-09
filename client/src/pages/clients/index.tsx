@@ -6,11 +6,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Search, Users, Building2, Mail, Phone, MapPin, MoreVertical, Edit, Eye, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Plus,
+  Search,
+  Users,
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  MoreVertical,
+  Edit,
+  Eye,
+  Trash2,
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Client } from "@shared/schema";
@@ -38,17 +73,22 @@ export default function ClientsList() {
       });
     },
     onError: (error: any) => {
-      console.error('Delete error:', error);
+      console.error("Delete error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete client. Please try again.",
+        description:
+          error.message || "Failed to delete client. Please try again.",
         variant: "destructive",
       });
     },
   });
 
   const handleDelete = (clientId: string, clientName: string) => {
-    if (window.confirm(`Are you sure you want to delete ${clientName}? This action cannot be undone.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${clientName}? This action cannot be undone.`,
+      )
+    ) {
       deleteMutation.mutate(clientId);
     }
   };
@@ -77,8 +117,10 @@ export default function ClientsList() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
-      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
-      if (industryFilter && industryFilter !== "all") params.append("industry", industryFilter);
+      if (statusFilter && statusFilter !== "all")
+        params.append("status", statusFilter);
+      if (industryFilter && industryFilter !== "all")
+        params.append("industry", industryFilter);
 
       const response = await fetch(`/api/clients?${params.toString()}`);
       if (!response.ok) {
@@ -100,7 +142,12 @@ export default function ClientsList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Clients</h1>
+          <h1
+            className="text-3xl font-bold font-display mb-2"
+            data-testid="page-title"
+          >
+            Clients
+          </h1>
           <p className="text-muted-foreground">Manage your client portfolio</p>
         </div>
         <Link href="/clients/new">
@@ -125,7 +172,10 @@ export default function ClientsList() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[180px]" data-testid="select-status">
+              <SelectTrigger
+                className="w-full md:w-[180px]"
+                data-testid="select-status"
+              >
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -135,7 +185,10 @@ export default function ClientsList() {
               </SelectContent>
             </Select>
             <Select value={industryFilter} onValueChange={setIndustryFilter}>
-              <SelectTrigger className="w-full md:w-[200px]" data-testid="select-industry">
+              <SelectTrigger
+                className="w-full md:w-[200px]"
+                data-testid="select-industry"
+              >
                 <SelectValue placeholder="Industry" />
               </SelectTrigger>
               <SelectContent>
@@ -144,7 +197,9 @@ export default function ClientsList() {
                 <SelectItem value="travel_agency">Travel Agency</SelectItem>
                 <SelectItem value="gds">GDS</SelectItem>
                 <SelectItem value="ota">OTA</SelectItem>
-                <SelectItem value="aviation_services">Aviation Services</SelectItem>
+                <SelectItem value="aviation_services">
+                  Aviation Services
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -173,12 +228,18 @@ export default function ClientsList() {
                   <TableHead>Industry</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Region</TableHead>
-                  <TableHead className="text-center w-[80px]">Actions</TableHead>
+                  <TableHead className="text-center w-[80px]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {clients.map((client) => (
-                  <TableRow key={client.id} className="cursor-pointer hover:bg-muted/50" data-testid={`client-row-${client.id}`}>
+                  <TableRow
+                    key={client.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    data-testid={`client-row-${client.id}`}
+                  >
                     <TableCell>
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Building2 className="h-5 w-5 text-primary" />
@@ -186,20 +247,29 @@ export default function ClientsList() {
                     </TableCell>
                     <TableCell>
                       <Link href={`/clients/${client.id}`}>
-                        <div className="font-semibold hover:text-primary transition-colors" data-testid={`client-name-${client.id}`}>
+                        <div
+                          className="font-semibold hover:text-primary transition-colors"
+                          data-testid={`client-name-${client.id}`}
+                        >
                           {client.name}
                         </div>
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={client.status === "active" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          client.status === "active" ? "default" : "secondary"
+                        }
+                      >
                         {client.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="capitalize">{client.industry.replace(/_/g, ' ')}</span>
+                        <span className="capitalize">
+                          {client.industry.replace(/_/g, " ")}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -207,7 +277,9 @@ export default function ClientsList() {
                         {client.email && (
                           <div className="flex items-center gap-2 text-sm">
                             <Mail className="h-3 w-3 text-muted-foreground" />
-                            <span className="truncate max-w-[200px]">{client.email}</span>
+                            <span className="truncate max-w-[200px]">
+                              {client.email}
+                            </span>
                           </div>
                         )}
                         {client.phone && (
@@ -229,20 +301,26 @@ export default function ClientsList() {
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" data-testid={`actions-menu-${client.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            data-testid={`actions-menu-${client.id}`}
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate("/clients/new")}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add New Client
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/clients/${client.id}/edit`)}>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate(`/clients/${client.id}/edit`)
+                            }
+                          >
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePreview(client)}>
+                          <DropdownMenuItem
+                            onClick={() => handlePreview(client)}
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
@@ -267,7 +345,9 @@ export default function ClientsList() {
           <CardContent className="p-12 text-center">
             <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No clients found</h3>
-            <p className="text-muted-foreground mb-4">Get started by adding your first client</p>
+            <p className="text-muted-foreground mb-4">
+              Get started by adding your first client
+            </p>
             <Link href="/clients/new">
               <Button data-testid="button-add-first-client">
                 <Plus className="h-4 w-4 mr-2" />
@@ -291,28 +371,46 @@ export default function ClientsList() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Client Name</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Client Name
+                    </p>
                     <p className="font-medium">{previewClient.name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Status</p>
-                    <Badge variant={previewClient.status === "active" ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        previewClient.status === "active"
+                          ? "default"
+                          : "secondary"
+                      }
+                    >
                       {previewClient.status}
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Industry</p>
-                    <p className="font-medium capitalize">{previewClient.industry.replace(/_/g, ' ')}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Industry
+                    </p>
+                    <p className="font-medium capitalize">
+                      {previewClient.industry.replace(/_/g, " ")}
+                    </p>
                   </div>
                   {previewClient.employeeName && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Employee Name</p>
-                      <p className="font-medium">{previewClient.employeeName}</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Employee Name
+                      </p>
+                      <p className="font-medium">
+                        {previewClient.employeeName}
+                      </p>
                     </div>
                   )}
                   {previewClient.region && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Region</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Region
+                      </p>
                       <p className="font-medium">{previewClient.region}</p>
                     </div>
                   )}
@@ -326,8 +424,12 @@ export default function ClientsList() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {previewClient.contactPerson && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Contact Person</p>
-                      <p className="font-medium">{previewClient.contactPerson}</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Contact Person
+                      </p>
+                      <p className="font-medium">
+                        {previewClient.contactPerson}
+                      </p>
                     </div>
                   )}
                   {previewClient.email && (
@@ -350,8 +452,12 @@ export default function ClientsList() {
                   )}
                   {previewClient.gstTaxId && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">GST/Tax ID</p>
-                      <p className="font-medium font-mono text-sm">{previewClient.gstTaxId}</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        GST/Tax ID
+                      </p>
+                      <p className="font-medium font-mono text-sm">
+                        {previewClient.gstTaxId}
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -363,19 +469,26 @@ export default function ClientsList() {
                     <CardTitle className="text-lg">Address</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="font-medium text-sm">{previewClient.address}</p>
+                    <p className="font-medium text-sm">
+                      {previewClient.address}
+                    </p>
                   </CardContent>
                 </Card>
               )}
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPreviewOpen(false)}
+                >
                   Close
                 </Button>
-                <Button onClick={() => {
-                  setIsPreviewOpen(false);
-                  navigate(`/clients/${previewClient.id}/edit`);
-                }}>
+                <Button
+                  onClick={() => {
+                    setIsPreviewOpen(false);
+                    navigate(`/clients/${previewClient.id}/edit`);
+                  }}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Client
                 </Button>
