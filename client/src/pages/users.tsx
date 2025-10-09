@@ -40,13 +40,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Search, Shield, Pencil, Trash2, Eye, KeyRound, Filter, MoreVertical } from "lucide-react";
+import { UserPlus, Search, Shield, Pencil, Trash2, Eye, KeyRound, Filter, MoreVertical, Download, Upload } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UserBulkImportDialog } from "@/components/user-bulk-import-dialog";
+import { generateSampleUserSheet } from "@/lib/userImport";
 
 type User = {
   id: string;
@@ -89,6 +91,7 @@ export default function UsersPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
+  const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState({
@@ -278,10 +281,26 @@ export default function UsersPage() {
             Manage application users, roles, and access permissions
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add User
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={generateSampleUserSheet}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Template
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsBulkImportDialogOpen(true)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add User
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -675,6 +694,12 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Bulk Import Dialog */}
+      <UserBulkImportDialog
+        open={isBulkImportDialogOpen}
+        onOpenChange={setIsBulkImportDialogOpen}
+      />
     </div>
   );
 }
