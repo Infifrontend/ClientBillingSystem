@@ -28,7 +28,6 @@ export default function Dashboard() {
     from: undefined,
     to: undefined,
   });
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const { data: clients } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
@@ -143,9 +142,6 @@ export default function Dashboard() {
             </Select>
             <Select value={dateRangeType} onValueChange={(value) => {
               setDateRangeType(value);
-              if (value === "custom") {
-                setDatePickerOpen(true);
-              }
             }}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue>
@@ -165,7 +161,7 @@ export default function Dashboard() {
               </SelectContent>
             </Select>
             {dateRangeType === "custom" && (
-              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+              <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
                     <CalendarIcon className="h-4 w-4" />
