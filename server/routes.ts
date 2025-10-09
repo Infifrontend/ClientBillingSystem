@@ -5,7 +5,8 @@ import { z } from "zod";
 import { requireRole, requirePermission, AuthenticatedRequest, canAccessClient } from "./middleware/permissions";
 import { log } from "./vite";
 import { db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
+import * as schema from "@shared/schema";
 
 // Simple mock user for development - replace with your own auth logic
 const mockUser = {
@@ -280,13 +281,51 @@ export function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Client not found" });
       }
 
-      const success = await storage.deleteClient(req.params.id);
-      if (!success) {
-        return res.status(500).json({ error: "Failed to delete client" });
-      }
+      // Delete related records first
+      try {
+        // Delete CR invoices
+        const crInvoices = await storage.getCrInvoices({ clientId: req.params.id });
+        for (const invoice of crInvoices) {
+          await storage.deleteCrInvoice(invoice.id);
+        }
 
-      res.json({ success: true, message: "Client deleted successfully" });
+        // Delete notifications
+        await db.delete(schema.notifications).where(eq(schema.notifications.clientId, req.params.id));
+
+        // Delete AI insights
+        await db.delete(schema.aiInsights).where(eq(schema.aiInsights.clientId, req.params.id));
+
+        // Delete invoices
+        const invoices = await storage.getInvoices({ clientId: req.params.id });
+        for (const invoice of invoices) {
+          await storage.deleteInvoice(invoice.id);
+        }
+
+        // Delete agreements
+        const agreements = await storage.getAgreements({ clientId: req.params.id });
+        for (const agreement of agreements) {
+          await storage.deleteAgreement(agreement.id);
+        }
+
+        // Delete services
+        const services = await storage.getServices({ clientId: req.params.id });
+        for (const service of services) {
+          await storage.deleteService(service.id);
+        }
+
+        // Finally delete the client
+        const success = await storage.deleteClient(req.params.id);
+        if (!success) {
+          return res.status(500).json({ error: "Failed to delete client" });
+        }
+
+        res.json({ success: true, message: "Client and all related records deleted successfully" });
+      } catch (deleteError: any) {
+        console.error('[ERROR] Failed to delete client and related records:', deleteError);
+        return res.status(500).json({ error: "Failed to delete client: " + deleteError.message });
+      }
     } catch (error: any) {
+      console.error('[ERROR] Delete client error:', error);
       res.status(500).json({ error: error.message });
     }
   });
