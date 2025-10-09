@@ -261,9 +261,9 @@ export default function Services() {
               className="text-2xl font-bold font-mono text-chart-3"
               data-testid="stat-mrr"
             >
-              ₹{(services?.stats?.monthlyRevenue || 0).toLocaleString()}
+              {(services?.stats?.monthlyRevenue || 0).toLocaleString()}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+            <p className="text-sm text-muted-foreground">Monthly Revenue (Multi-Currency)</p>
           </CardHeader>
         </Card>
 
@@ -273,9 +273,9 @@ export default function Services() {
               className="text-2xl font-bold font-mono"
               data-testid="stat-arr"
             >
-              ₹{(services?.stats?.annualRevenue || 0).toLocaleString()}
+              {(services?.stats?.annualRevenue || 0).toLocaleString()}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Annual Revenue</p>
+            <p className="text-sm text-muted-foreground">Annual Revenue (Multi-Currency)</p>
           </CardHeader>
         </Card>
       </div>
@@ -342,7 +342,12 @@ export default function Services() {
                     </TableCell>
                     <TableCell>
                       <div className="font-medium font-mono">
-                        ₹{service.amount}
+                        {service.currency === "INR"
+                          ? "₹"
+                          : service.currency === "USD"
+                            ? "$"
+                            : "€"}
+                        {Number(service.amount).toLocaleString()}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -487,7 +492,12 @@ export default function Services() {
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Amount</p>
                     <p className="font-medium font-mono">
-                      {previewService.currency} {previewService.amount}
+                      {previewService.currency === "INR"
+                        ? "₹"
+                        : previewService.currency === "USD"
+                          ? "$"
+                          : "€"}
+                      {Number(previewService.amount).toLocaleString()}
                     </p>
                   </div>
                   <div>
