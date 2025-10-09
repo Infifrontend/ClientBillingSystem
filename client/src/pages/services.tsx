@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ServiceFormDialog } from "@/components/service-form-dialog";
+import { ServiceBulkImportDialog } from "@/components/service-bulk-import-dialog";
 import {
   Plus,
   Search,
@@ -45,8 +46,11 @@ import {
   Edit,
   Eye,
   Trash2,
+  Download,
+  Upload,
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { generateSampleServiceSheet } from "@/lib/serviceImport";
 import type { Service } from "@shared/schema";
 
 export default function Services() {
@@ -59,6 +63,7 @@ export default function Services() {
   const [selectedService, setSelectedService] = useState<any>(null);
   const [previewService, setPreviewService] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: async (serviceId: string) => {
@@ -168,16 +173,34 @@ export default function Services() {
             Manage client services and billing records
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setSelectedService(null);
-            setIsDialogOpen(true);
-          }}
-          data-testid="button-add-service"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Service
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={generateSampleServiceSheet}
+            data-testid="button-download-sample"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Sample
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsBulkImportOpen(true)}
+            data-testid="button-bulk-import"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <Button
+            onClick={() => {
+              setSelectedService(null);
+              setIsDialogOpen(true);
+            }}
+            data-testid="button-add-service"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Service
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -600,6 +623,11 @@ export default function Services() {
           )}
         </DialogContent>
       </Dialog>
+
+      <ServiceBulkImportDialog
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
+      />
     </div>
   );
 }
