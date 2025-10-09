@@ -263,7 +263,9 @@ export default function Services() {
             >
               {(services?.stats?.monthlyRevenue || 0).toLocaleString()}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Monthly Revenue (Multi-Currency)</p>
+            <p className="text-sm text-muted-foreground">
+              Monthly Revenue (Multi-Currency)
+            </p>
           </CardHeader>
         </Card>
 
@@ -275,7 +277,9 @@ export default function Services() {
             >
               {(services?.stats?.annualRevenue || 0).toLocaleString()}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Annual Revenue (Multi-Currency)</p>
+            <p className="text-sm text-muted-foreground">
+              Annual Revenue (Multi-Currency)
+            </p>
           </CardHeader>
         </Card>
       </div>
@@ -318,7 +322,13 @@ export default function Services() {
                   >
                     <TableCell>
                       <div className="w-10 h-10 rounded-lg bg-chart-2/10 flex items-center justify-center">
-                        <IndianRupee className="h-5 w-5 text-chart-2" />
+                        <div className="font-medium font-mono text-xl">
+                          {service.currency === "INR"
+                            ? "₹"
+                            : service.currency === "USD"
+                              ? "$"
+                              : "€"}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -384,11 +394,16 @@ export default function Services() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {service.isRecurring && (
-                        <Badge variant="outline" className="text-xs">
-                          Recurring
-                        </Badge>
-                      )}
+                      <Badge
+                        variant="outline"
+                        className={`text-xs capitalize border ${
+                          service?.status?.toLowerCase() === "paid"
+                            ? "text-green-700 border-green-700"
+                            : "text-red-700 border-red-700"
+                        }`}
+                      >
+                        {service?.status}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
