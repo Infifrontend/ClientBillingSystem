@@ -34,7 +34,14 @@ function AuthenticatedRoutes() {
         <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b bg-card">
+            <div>
+              <h1 className="text-3xl font-bold">User Management</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage application users, roles, and access permissions
+              </p>
+            </div>
             <SidebarTrigger data-testid="button-sidebar-toggle" />
+
             <div className="flex items-center gap-4">
               <NotificationBell />
               <div className="text-sm text-muted-foreground">
@@ -68,7 +75,7 @@ function AuthenticatedRoutes() {
 function Router() {
   // Check if user is logged in using sessionStorage
   const [isLoggedIn, setIsLoggedIn] = useState(
-    sessionStorage.getItem("isLoggedIn") === "true"
+    sessionStorage.getItem("isLoggedIn") === "true",
   );
 
   // Listen for storage changes (in case of login from another tab)

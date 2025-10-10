@@ -307,12 +307,7 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage application users, roles, and access permissions
-          </p>
-        </div>
+       
         <div className="flex gap-2">
           <Button variant="outline" onClick={generateSampleUserSheet}>
             <Download className="h-4 w-4 mr-2" />
