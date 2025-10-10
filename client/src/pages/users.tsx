@@ -97,6 +97,7 @@ export default function UsersPage() {
   const [newUser, setNewUser] = useState({
     email: "",
     username: "",
+    password: "",
     firstName: "",
     lastName: "",
     role: "viewer" as const,
@@ -249,6 +250,7 @@ export default function UsersPage() {
     setNewUser({
       email: user.email,
       username: user.username || "",
+      password: "", // Leave empty for security, only update if user enters new password
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
@@ -269,7 +271,7 @@ export default function UsersPage() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingUser(null);
-    setNewUser({ email: "", username: "", firstName: "", lastName: "", role: "viewer", department: "", status: "active" });
+    setNewUser({ email: "", username: "", password: "", firstName: "", lastName: "", role: "viewer", department: "", status: "active" });
   };
 
   return (
@@ -495,6 +497,20 @@ export default function UsersPage() {
                   setNewUser({ ...newUser, username: e.target.value })
                 }
                 placeholder="johndoe"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">
+                Password {editingUser ? "(Leave empty to keep current)" : "*"}
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, password: e.target.value })
+                }
+                placeholder={editingUser ? "Enter new password to change" : "Enter password"}
               />
             </div>
             <div>

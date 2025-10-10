@@ -1069,6 +1069,11 @@ export function registerRoutes(app: Express) {
         }
       }
       
+      // If password is empty string during update, remove it from updates
+      if (updates.password === "") {
+        delete updates.password;
+      }
+      
       const user = await storage.updateUser(req.params.id, updates);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
