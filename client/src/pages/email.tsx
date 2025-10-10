@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,33 +73,7 @@ export default function EmailPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>SMTP Configuration</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 text-sm">
-            <p className="text-muted-foreground">
-              Email sending is configured using the following environment variables:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>SMTP_HOST - SMTP server hostname</li>
-              <li>SMTP_PORT - SMTP server port (usually 587 for TLS or 465 for SSL)</li>
-              <li>SMTP_USER - Your email address</li>
-              <li>SMTP_PASS - Your email password or app password</li>
-              <li>SMTP_FROM_NAME - Display name for sent emails</li>
-            </ul>
-            <p className="text-muted-foreground mt-4">
-              Make sure these are configured in your Replit Secrets before sending emails.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <EmailSendDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-      />
+      <EmailSendDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </div>
   );
 }
