@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Search, Shield, Pencil, Trash2, Eye, KeyRound, Filter, MoreVertical, Download, Upload } from "lucide-react";
+import { UserPlus, Search, Shield, Pencil, Trash2, Eye, KeyRound, Filter, MoreVertical, Download, Upload, Mail } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
