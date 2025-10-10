@@ -41,10 +41,8 @@ export default function Login() {
       sessionStorage.setItem("isLoggedIn", "true");
       sessionStorage.setItem("user", JSON.stringify(data));
       
-      // Use setTimeout to ensure sessionStorage is written before navigation
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 0);
+      // Navigate to dashboard using wouter
+      setLocation("/");
     } catch (err: any) {
       setError("An error occurred during login. Please try again.");
       setIsLoading(false);

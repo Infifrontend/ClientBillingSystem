@@ -95,7 +95,14 @@ const menuItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const [, setLocation] = useLocation();
   const { user, isLoading } = useAuth();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("user");
+    setLocation("/login");
+  };
 
   return (
     <Sidebar data-testid="sidebar">
@@ -162,12 +169,12 @@ export function AppSidebar() {
               className="text-sm font-medium truncate text-white"
               data-testid="user-name"
             >
-              {user?.firstName && user?.lastName 
-                ? `${user.firstName} ${user.lastName}` 
+              {user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
                 : user?.username || "User"}
             </p>
             <p className="text-xs text-white/60 truncate">
-              {user?.role === 'admin' ? 'Admin' : 
+              {user?.role === 'admin' ? 'Admin' :
                user?.role === 'csm' ? 'Manager' :
                user?.role === 'finance' ? 'Finance' :
                user?.role === 'viewer' ? 'Employee' : 'User'}
@@ -178,11 +185,7 @@ export function AppSidebar() {
           variant="outline"
           size="sm"
           className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
-          onClick={() => {
-            sessionStorage.removeItem("isLoggedIn");
-            sessionStorage.removeItem("user");
-            window.location.href = "/";
-          }}
+          onClick={handleLogout}
           data-testid="button-logout"
         >
           <LogOut className="h-4 w-4 mr-2" />

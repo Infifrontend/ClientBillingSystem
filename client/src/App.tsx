@@ -133,37 +133,17 @@ function AuthenticatedRoutes() {
 }
 
 function Router() {
-  // Check if user is logged in using sessionStorage
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    sessionStorage.getItem("isLoggedIn") === "true",
-  );
+  const [location] = useLocation();
+  
+  // Check if user is logged in using sessionStorage - use direct check to avoid flash
+  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
 
-  // Listen for storage changes (in case of login from another tab)
-  useEffect(() => {
-    const checkAuth = () => {
-      const loggedIn = sessionStorage.getItem("isLoggedIn") === "true";
-      setIsLoggedIn(loggedIn);
-    };
-
-    // Check on mount
-    checkAuth();
-
-    // Listen for storage events from other tabs
-    window.addEventListener("storage", checkAuth);
-    
-    // Also check periodically for same-tab changes
-    const interval = setInterval(checkAuth, 100);
-
-    return () => {
-      window.removeEventListener("storage", checkAuth);
-      clearInterval(interval);
-    };
-  }, []);
-
+  // If logged in, show authenticated routes
   if (isLoggedIn) {
     return <AuthenticatedRoutes />;
   }
 
+  // If not logged in, show public routes
   return (
     <Switch>
       <Route path="/" component={Landing} />
