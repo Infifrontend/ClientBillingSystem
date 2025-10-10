@@ -92,14 +92,15 @@ function AuthenticatedRoutes() {
         <AppSidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b bg-card">
-            <div>
-              <h1 className="text-3xl font-bold">{pageHeader.title}</h1>
-              <p className="text-muted-foreground mt-1">
-                {pageHeader.description}
-              </p>
+            <div className="flex items-center gap-4">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <div>
+                <h1 className="text-3xl font-bold">{pageHeader.title}</h1>
+                <p className="text-muted-foreground mt-1">
+                  {pageHeader.description}
+                </p>
+              </div>
             </div>
-            <SidebarTrigger data-testid="button-sidebar-toggle" />
-
             <div className="flex items-center gap-4">
               <NotificationBell />
               <div className="text-sm text-muted-foreground">
