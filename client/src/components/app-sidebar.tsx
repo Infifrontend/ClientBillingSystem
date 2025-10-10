@@ -153,16 +153,25 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-sm font-medium text-white">AD</span>
+            <span className="text-sm font-medium text-white">
+              {user?.firstName?.[0]?.toUpperCase() || "U"}{user?.lastName?.[0]?.toUpperCase() || ""}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
             <p
               className="text-sm font-medium truncate text-white"
               data-testid="user-name"
             >
-              admin
+              {user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}` 
+                : user?.username || "User"}
             </p>
-            <p className="text-xs text-white/60 truncate">Admin</p>
+            <p className="text-xs text-white/60 truncate">
+              {user?.role === 'admin' ? 'Admin' : 
+               user?.role === 'csm' ? 'Manager' :
+               user?.role === 'finance' ? 'Finance' :
+               user?.role === 'viewer' ? 'Employee' : 'User'}
+            </p>
           </div>
         </div>
         <Button
@@ -171,6 +180,7 @@ export function AppSidebar() {
           className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
           onClick={() => {
             sessionStorage.removeItem("isLoggedIn");
+            sessionStorage.removeItem("user");
             window.location.href = "/";
           }}
           data-testid="button-logout"

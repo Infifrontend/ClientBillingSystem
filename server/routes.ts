@@ -70,7 +70,10 @@ export function registerRoutes(app: Express) {
 
   app.get("/api/auth/user", async (req: any, res: Response) => {
     try {
-      res.json(mockUser);
+      // In a real application, you would get the user ID from the session/token
+      // For now, we'll return null to indicate no authenticated user
+      // The frontend will handle authentication state via sessionStorage
+      res.status(401).json({ error: "Not authenticated" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
