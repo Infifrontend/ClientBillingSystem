@@ -14,35 +14,17 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Login failed");
-        return;
-      }
-
-      // Store user data and login state
+    if (username === "admin" && password === "admin@123") {
+      // Store login state in sessionStorage
       sessionStorage.setItem("isLoggedIn", "true");
-      sessionStorage.setItem("userData", JSON.stringify(data));
-      
       // Force a page reload to ensure App.tsx picks up the new session state
-      window.location.href = "/";
-    } catch (error: any) {
-      setError("An error occurred during login. Please try again.");
-      console.error("Login error:", error);
+      window.location.href = "/dashboard";
+    } else {
+      setError("Invalid username or password");
     }
   };
 
