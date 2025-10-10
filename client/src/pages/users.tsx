@@ -562,47 +562,162 @@ export default function UsersPage() {
 
       {/* View User Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>User Profile</DialogTitle>
+            <DialogTitle className="text-2xl">User Profile</DialogTitle>
+            <DialogDescription>
+              Detailed information about the user account
+            </DialogDescription>
           </DialogHeader>
           {selectedUser && (
-            <div className="space-y-4">
-              <div>
-                <Label>Full Name</Label>
-                <p className="text-sm font-medium">{selectedUser.firstName} {selectedUser.lastName}</p>
+            <div className="space-y-6">
+              {/* Header Section with Avatar */}
+              <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold">
+                  {selectedUser.firstName.charAt(0)}{selectedUser.lastName.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">
+                    {selectedUser.firstName} {selectedUser.lastName}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Badge variant={roleColors[selectedUser.role]} className="text-xs">
+                    {roleLabels[selectedUser.role]}
+                  </Badge>
+                  <Badge variant={statusColors[selectedUser.status]} className="text-xs">
+                    {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <Label>Email</Label>
-                <p className="text-sm">{selectedUser.email}</p>
+
+              {/* Account Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Contact Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start gap-2">
+                      <Mail className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Email Address</p>
+                        <p className="text-sm font-medium">{selectedUser.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Shield className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Username / Login ID</p>
+                        <p className="text-sm font-medium">{selectedUser.username || "-"}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      Role & Department
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">User Role</p>
+                      <Badge variant={roleColors[selectedUser.role]}>
+                        {roleLabels[selectedUser.role]}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Department / Team</p>
+                      <p className="text-sm font-medium">{selectedUser.department || "Not Assigned"}</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div>
-                <Label>Username</Label>
-                <p className="text-sm">{selectedUser.username || "-"}</p>
+
+              {/* Activity Information */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Account Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Account Status</p>
+                    <Badge variant={statusColors[selectedUser.status]}>
+                      {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Last Login</p>
+                    <p className="text-sm font-medium">
+                      {selectedUser.lastLogin 
+                        ? new Date(selectedUser.lastLogin).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })
+                        : "Never"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Account Created</p>
+                    <p className="text-sm font-medium">
+                      {new Date(selectedUser.createdAt).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Security Notice */}
+              <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <KeyRound className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                      Password Security
+                    </h4>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                      For security reasons, passwords are encrypted and cannot be displayed. 
+                      Use the "Reset Password" action to send a password reset link to the user's email.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label>Role</Label>
-                <Badge variant={roleColors[selectedUser.role]}>
-                  {roleLabels[selectedUser.role]}
-                </Badge>
-              </div>
-              <div>
-                <Label>Department</Label>
-                <p className="text-sm">{selectedUser.department || "-"}</p>
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Badge variant={statusColors[selectedUser.status]}>
-                  {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}
-                </Badge>
-              </div>
-              <div>
-                <Label>Last Login</Label>
-                <p className="text-sm">{selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "Never"}</p>
-              </div>
-              <div>
-                <Label>Created Date</Label>
-                <p className="text-sm">{new Date(selectedUser.createdAt).toLocaleString()}</p>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsViewDialogOpen(false);
+                    handleEdit(selectedUser);
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit User
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setIsViewDialogOpen(false);
+                    setIsResetPasswordDialogOpen(true);
+                  }}
+                >
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  Reset Password
+                </Button>
               </div>
             </div>
           )}
