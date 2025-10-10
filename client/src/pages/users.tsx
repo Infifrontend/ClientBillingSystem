@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +39,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Search, Shield, Pencil, Trash2, Eye, KeyRound, Filter, MoreVertical, Download, Upload, Mail } from "lucide-react";
+import {
+  UserPlus,
+  Search,
+  Shield,
+  Pencil,
+  Trash2,
+  Eye,
+  KeyRound,
+  Filter,
+  MoreVertical,
+  Download,
+  Upload,
+  Mail,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,7 +102,8 @@ export default function UsersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
+  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] =
+    useState(false);
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -128,7 +141,15 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       setIsDialogOpen(false);
-      setNewUser({ email: "", username: "", firstName: "", lastName: "", role: "viewer", department: "", status: "active" });
+      setNewUser({
+        email: "",
+        username: "",
+        firstName: "",
+        lastName: "",
+        role: "viewer",
+        department: "",
+        status: "active",
+      });
       toast({
         title: "Success",
         description: "User created successfully",
@@ -231,19 +252,19 @@ export default function UsersPage() {
     },
   });
 
-  const filteredUsers = users.filter(
-    (user) => {
-      const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.username?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesRole = roleFilter === "all" || user.role === roleFilter;
-      const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-      
-      return matchesSearch && matchesRole && matchesStatus;
-    }
-  );
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.username?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesStatus =
+      statusFilter === "all" || user.status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -271,11 +292,20 @@ export default function UsersPage() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingUser(null);
-    setNewUser({ email: "", username: "", password: "", firstName: "", lastName: "", role: "viewer", department: "", status: "active" });
+    setNewUser({
+      email: "",
+      username: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+      role: "viewer",
+      department: "",
+      status: "active",
+    });
   };
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">User Management</h1>
@@ -284,10 +314,7 @@ export default function UsersPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={generateSampleUserSheet}
-          >
+          <Button variant="outline" onClick={generateSampleUserSheet}>
             <Download className="h-4 w-4 mr-2" />
             Download Template
           </Button>
@@ -349,97 +376,104 @@ export default function UsersPage() {
         <CardContent className="overflow-visible">
           <div className="w-full overflow-visible">
             <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">
-                    Loading...
-                  </TableCell>
+                  <TableHead>User Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Username</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Login</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
-              ) : filteredUsers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center">
-                    No users found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {user.firstName} {user.lastName}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.username || "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={roleColors[user.role]}>
-                        {roleLabels[user.role]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.department || "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusColors[user.status]}>
-                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : "Never"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedUser(user);
-                            setIsViewDialogOpen(true);
-                          }}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEdit(user)}>
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedUser(user);
-                            setIsResetPasswordDialogOpen(true);
-                          }}>
-                            <KeyRound className="h-4 w-4 mr-2" />
-                            Reset Password
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      Loading...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      No users found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {user.firstName} {user.lastName}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.username || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant={roleColors[user.role]}>
+                          {roleLabels[user.role]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{user.department || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusColors[user.status]}>
+                          {user.status.charAt(0).toUpperCase() +
+                            user.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.lastLogin
+                          ? new Date(user.lastLogin).toLocaleString()
+                          : "Never"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsViewDialogOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEdit(user)}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsResetPasswordDialogOpen(true);
+                              }}
+                            >
+                              <KeyRound className="h-4 w-4 mr-2" />
+                              Reset Password
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
@@ -448,9 +482,13 @@ export default function UsersPage() {
       <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingUser ? "Edit User" : "Add New User"}</DialogTitle>
+            <DialogTitle>
+              {editingUser ? "Edit User" : "Add New User"}
+            </DialogTitle>
             <DialogDescription>
-              {editingUser ? "Update user information and permissions" : "Create a new user account with role and department assignment"}
+              {editingUser
+                ? "Update user information and permissions"
+                : "Create a new user account with role and department assignment"}
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
@@ -510,7 +548,11 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setNewUser({ ...newUser, password: e.target.value })
                 }
-                placeholder={editingUser ? "Enter new password to change" : "Enter password"}
+                placeholder={
+                  editingUser
+                    ? "Enter new password to change"
+                    : "Enter password"
+                }
               />
             </div>
             <div>
@@ -527,8 +569,12 @@ export default function UsersPage() {
                 <SelectContent>
                   <SelectItem value="admin">Admin - Full Access</SelectItem>
                   <SelectItem value="csm">Manager - Team Management</SelectItem>
-                  <SelectItem value="finance">Finance - Financial Data</SelectItem>
-                  <SelectItem value="viewer">Employee - Limited Access</SelectItem>
+                  <SelectItem value="finance">
+                    Finance - Financial Data
+                  </SelectItem>
+                  <SelectItem value="viewer">
+                    Employee - Limited Access
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -568,7 +614,9 @@ export default function UsersPage() {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={createUserMutation.isPending || updateUserMutation.isPending}
+              disabled={
+                createUserMutation.isPending || updateUserMutation.isPending
+              }
             >
               {editingUser ? "Update User" : "Create User"}
             </Button>
@@ -590,20 +638,30 @@ export default function UsersPage() {
               {/* Header Section with Avatar */}
               <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold">
-                  {selectedUser.firstName.charAt(0)}{selectedUser.lastName.charAt(0)}
+                  {selectedUser.firstName.charAt(0)}
+                  {selectedUser.lastName.charAt(0)}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold">
                     {selectedUser.firstName} {selectedUser.lastName}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedUser.email}
+                  </p>
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant={roleColors[selectedUser.role]} className="text-xs">
+                  <Badge
+                    variant={roleColors[selectedUser.role]}
+                    className="text-xs"
+                  >
                     {roleLabels[selectedUser.role]}
                   </Badge>
-                  <Badge variant={statusColors[selectedUser.status]} className="text-xs">
-                    {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}
+                  <Badge
+                    variant={statusColors[selectedUser.status]}
+                    className="text-xs"
+                  >
+                    {selectedUser.status.charAt(0).toUpperCase() +
+                      selectedUser.status.slice(1)}
                   </Badge>
                 </div>
               </div>
@@ -620,15 +678,23 @@ export default function UsersPage() {
                     <div className="flex items-start gap-2">
                       <Mail className="h-4 w-4 mt-0.5 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Email Address</p>
-                        <p className="text-sm font-medium">{selectedUser.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Email Address
+                        </p>
+                        <p className="text-sm font-medium">
+                          {selectedUser.email}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <Shield className="h-4 w-4 mt-0.5 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Username / Login ID</p>
-                        <p className="text-sm font-medium">{selectedUser.username || "-"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Username / Login ID
+                        </p>
+                        <p className="text-sm font-medium">
+                          {selectedUser.username || "-"}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -642,14 +708,20 @@ export default function UsersPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">User Role</p>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        User Role
+                      </p>
                       <Badge variant={roleColors[selectedUser.role]}>
                         {roleLabels[selectedUser.role]}
                       </Badge>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Department / Team</p>
-                      <p className="text-sm font-medium">{selectedUser.department || "Not Assigned"}</p>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Department / Team
+                      </p>
+                      <p className="text-sm font-medium">
+                        {selectedUser.department || "Not Assigned"}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -664,33 +736,46 @@ export default function UsersPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Account Status</p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Account Status
+                    </p>
                     <Badge variant={statusColors[selectedUser.status]}>
-                      {selectedUser.status.charAt(0).toUpperCase() + selectedUser.status.slice(1)}
+                      {selectedUser.status.charAt(0).toUpperCase() +
+                        selectedUser.status.slice(1)}
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Last Login</p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Last Login
+                    </p>
                     <p className="text-sm font-medium">
-                      {selectedUser.lastLogin 
-                        ? new Date(selectedUser.lastLogin).toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
+                      {selectedUser.lastLogin
+                        ? new Date(selectedUser.lastLogin).toLocaleString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )
                         : "Never"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Account Created</p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Account Created
+                    </p>
                     <p className="text-sm font-medium">
-                      {new Date(selectedUser.createdAt).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
+                      {new Date(selectedUser.createdAt).toLocaleString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
                 </CardContent>
@@ -705,8 +790,9 @@ export default function UsersPage() {
                       Password Security
                     </h4>
                     <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                      For security reasons, passwords are encrypted and cannot be displayed. 
-                      Use the "Reset Password" action to send a password reset link to the user's email.
+                      For security reasons, passwords are encrypted and cannot
+                      be displayed. Use the "Reset Password" action to send a
+                      password reset link to the user's email.
                     </p>
                   </div>
                 </div>
@@ -741,19 +827,25 @@ export default function UsersPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user
-              account for {selectedUser?.firstName} {selectedUser?.lastName}.
+              This action cannot be undone. This will permanently delete the
+              user account for {selectedUser?.firstName}{" "}
+              {selectedUser?.lastName}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => selectedUser && deleteUserMutation.mutate(selectedUser.id)}
+              onClick={() =>
+                selectedUser && deleteUserMutation.mutate(selectedUser.id)
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
@@ -763,19 +855,24 @@ export default function UsersPage() {
       </AlertDialog>
 
       {/* Reset Password Dialog */}
-      <AlertDialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
+      <AlertDialog
+        open={isResetPasswordDialogOpen}
+        onOpenChange={setIsResetPasswordDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Password</AlertDialogTitle>
             <AlertDialogDescription>
-              A password reset link will be sent to {selectedUser?.email}.
-              The user will be required to set a new password.
+              A password reset link will be sent to {selectedUser?.email}. The
+              user will be required to set a new password.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => selectedUser && resetPasswordMutation.mutate(selectedUser.id)}
+              onClick={() =>
+                selectedUser && resetPasswordMutation.mutate(selectedUser.id)
+              }
             >
               Send Reset Link
             </AlertDialogAction>
@@ -796,7 +893,8 @@ export default function UsersPage() {
               <Badge variant="destructive">Admin</Badge>
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Full access to all features including user management, settings, system configuration, and can modify roles and delete users.
+              Full access to all features including user management, settings,
+              system configuration, and can modify roles and delete users.
             </p>
           </div>
           <div>
@@ -804,7 +902,8 @@ export default function UsersPage() {
               <Badge variant="default">Manager</Badge>
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Team management access with ability to manage assigned team members, view reports, and handle client relationships.
+              Team management access with ability to manage assigned team
+              members, view reports, and handle client relationships.
             </p>
           </div>
           <div>
@@ -812,7 +911,8 @@ export default function UsersPage() {
               <Badge variant="secondary">Finance</Badge>
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Access to financial data, invoices, billing, payment processing, and financial reports only.
+              Access to financial data, invoices, billing, payment processing,
+              and financial reports only.
             </p>
           </div>
           <div>
@@ -820,7 +920,8 @@ export default function UsersPage() {
               <Badge variant="outline">Employee</Badge>
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Limited access to assigned tasks and projects with read-only permissions for most features.
+              Limited access to assigned tasks and projects with read-only
+              permissions for most features.
             </p>
           </div>
         </CardContent>

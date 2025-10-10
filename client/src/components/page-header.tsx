@@ -1,4 +1,3 @@
-
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,16 +17,16 @@ interface PageHeaderProps {
   onClientChange?: (value: string) => void;
 }
 
-export function PageHeader({ 
-  title, 
-  subtitle, 
+export function PageHeader({
+  title,
+  subtitle,
   showClientFilter = false,
   clients = [],
   selectedClientId = "all",
-  onClientChange 
+  onClientChange,
 }: PageHeaderProps) {
   return (
-    <div className="border-b bg-white px-6 py-4">
+    <div className="border-b bg-white py-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{title}</h1>
