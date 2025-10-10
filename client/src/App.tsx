@@ -153,8 +153,8 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
+      <Route path="/" component={Landing} />
       <Route component={NotFound} />
     </Switch>
   );

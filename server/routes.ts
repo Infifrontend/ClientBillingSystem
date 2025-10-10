@@ -30,9 +30,75 @@ const isAuthenticated = (req: Request, res: Response, next: Function) => {
 
 
 export function registerRoutes(app: Express) {
+  // Login endpoint
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+
+      // Find user by username or email
+      const users = await db
+        .select()
+        .from(schema.users)
+        .where(
+          sql`${schema.users.username} = ${username} OR ${schema.users.email} = ${username}`
+        )
+        .limit(1);
+
+      const user = users[0];
+
+      if (!user) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      // Check if user is active
+      if (user.status !== "active") {
+        return res.status(403).json({ error: "User account is not active" });
+      }
+
+      // Verify password (in production, use bcrypt to hash/compare passwords)
+      if (user.password !== password) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      // Update last login time
+      await db
+        .update(schema.users)
+        .set({ lastLogin: new Date() })
+        .where(eq(schema.users.id, user.id));
+
+      // Return user data (excluding password)
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error('[ERROR] Login error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/auth/user", async (req: any, res: Response) => {
     try {
-      res.json(mockUser);
+      // In production, get user from session/token
+      // For now, return user from sessionStorage (client-side)
+      const userData = req.headers['x-user-data'];
+      if (userData) {
+        res.json(JSON.parse(userData as string));
+      } else {
+        res.json(mockUser);
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", async (req: Request, res: Response) => {
+    try {
+      // In production, destroy session/token here
+      res.json({ success: true, message: "Logged out successfully" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
