@@ -13,18 +13,39 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    if (username === "admin" && password === "admin@123") {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Invalid username or password");
+        setIsLoading(false);
+        return;
+      }
+
       // Store login state in sessionStorage
       sessionStorage.setItem("isLoggedIn", "true");
+      sessionStorage.setItem("user", JSON.stringify(data));
+      
       // Force a page reload to ensure App.tsx picks up the new session state
       window.location.href = "/dashboard";
-    } else {
-      setError("Invalid username or password");
+    } catch (err: any) {
+      setError("An error occurred during login. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -70,8 +91,8 @@ export default function Login() {
               />
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Sign In
+            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
         </CardContent>

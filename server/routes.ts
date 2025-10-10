@@ -9,27 +9,65 @@ import { sql, eq } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import { sendEmail } from "./email";
 
-// Simple mock user for development - replace with your own auth logic
-const mockUser = {
-  id: "45703559",
-  email: "admin@example.com",
-  firstName: "Admin",
-  lastName: "User",
-  role: "admin" as const,
-};
-
 // Mock isAuthenticated middleware for demonstration purposes
-// Replace with your actual authentication middleware
+// In a real application, you would verify the user's session or token here
 const isAuthenticated = (req: Request, res: Response, next: Function) => {
-  // In a real application, you would verify the user's session or token here
-  // For this example, we'll assume the user is authenticated if they reach this point
-  // and attach a mock user to the request.
+  // For this example, we'll use a simple mock user
+  // In production, verify session/token and fetch actual user
+  const mockUser = {
+    id: "45703559",
+    email: "admin@example.com",
+    firstName: "Admin",
+    lastName: "User",
+    role: "admin" as const,
+  };
   (req as AuthenticatedRequest).user = mockUser;
   next();
 };
 
 
 export function registerRoutes(app: Express) {
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+
+      // Find user by username
+      const users = await db.select().from(schema.users)
+        .where(eq(schema.users.username, username));
+      
+      if (users.length === 0) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      const user = users[0];
+
+      // Check if user is active
+      if (user.status !== "active") {
+        return res.status(401).json({ error: "Account is not active" });
+      }
+
+      // Verify password (plain text comparison for now)
+      if (user.password !== password) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      // Update last login
+      await db.update(schema.users)
+        .set({ lastLogin: new Date() })
+        .where(eq(schema.users.id, user.id));
+
+      // Return user data (excluding password)
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/auth/user", async (req: any, res: Response) => {
     try {
       res.json(mockUser);
