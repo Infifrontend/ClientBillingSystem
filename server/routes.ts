@@ -30,6 +30,53 @@ const isAuthenticated = (req: Request, res: Response, next: Function) => {
 
 
 export function registerRoutes(app: Express) {
+  // Login endpoint
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+
+      // Find user by username
+      const users = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.username, username))
+        .limit(1);
+
+      const user = users[0];
+
+      if (!user) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      // Check if user account is active
+      if (user.status !== "active") {
+        return res.status(403).json({ error: "Account is not active" });
+      }
+
+      // Verify password (plain text comparison for now - should use bcrypt in production)
+      if (user.password !== password) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+
+      // Update last login timestamp
+      await db
+        .update(schema.users)
+        .set({ lastLogin: new Date() })
+        .where(eq(schema.users.id, user.id));
+
+      // Return user data (excluding password)
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error('[ERROR] Login failed:', error);
+      res.status(500).json({ error: "Login failed. Please try again." });
+    }
+  });
+
   app.get("/api/auth/user", async (req: any, res: Response) => {
     try {
       res.json(mockUser);
