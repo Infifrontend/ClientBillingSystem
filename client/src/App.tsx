@@ -21,7 +21,6 @@ import InvoiceManagement from "./pages/invoice-management";
 import EmailPage from "./pages/email";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
-import { PageHeader } from "@/components/page-header";
 
 function AuthenticatedRoutes() {
   const style = {
@@ -54,13 +53,7 @@ function AuthenticatedRoutes() {
               <Route path="/agreements" component={Agreements} />
               <Route path="/reports" component={Reports} />
               <Route path="/insights" component={Insights} />
-              <Route path="/users">
-                <PageHeader 
-                  title="User Management" 
-                  subtitle="Manage application users, roles, and access permissions"
-                />
-                <UsersPage />
-              </Route>
+              <Route path="/users" component={UsersPage} />
               <Route path="/invoice-management" component={InvoiceManagement} />
               <Route path="/email" component={EmailPage} />
               <Route component={NotFound} />
