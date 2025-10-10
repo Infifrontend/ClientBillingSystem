@@ -891,6 +891,91 @@ export function registerRoutes(app: Express) {
       };
 
       const invoice = await storage.createCrInvoice(invoiceData);
+      
+      // Send email to all admin users if status is approved
+      if (invoice.status === "approved") {
+        const users = await storage.getUsers();
+        const adminUsers = users.filter(u => u.role === "admin");
+        const client = await storage.getClient(invoice.clientId);
+        
+        for (const admin of adminUsers) {
+          try {
+            const emailData = {
+              to: admin.email,
+              subject: "CR-Invoice Approved - Action Required",
+              message: `Hello ${admin.firstName} ${admin.lastName},
+
+A new CR-Invoice has been created and approved in the system.
+
+CR-Invoice Details:
+- CR No: ${invoice.crNo}
+- Client: ${client?.name || "Unknown"}
+- Employee: ${invoice.employeeName}
+- Amount: ${invoice.crCurrency} ${Number(invoice.amount).toLocaleString()}
+- Period: ${new Date(invoice.startDate).toLocaleDateString()} to ${new Date(invoice.endDate).toLocaleDateString()}
+- Status: Approved
+
+Please review and take necessary action.
+
+Best regards,
+Infiniti CMS Team`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                  <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h2 style="color: #333; margin-bottom: 20px;">CR-Invoice Approved</h2>
+                    <p style="color: #555; line-height: 1.6;">Hello <strong>${admin.firstName} ${admin.lastName}</strong>,</p>
+                    <p style="color: #555; line-height: 1.6;">A new CR-Invoice has been created and approved in the system.</p>
+                    
+                    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <h3 style="color: #333; margin-top: 0; margin-bottom: 15px;">CR-Invoice Details</h3>
+                      <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">CR No:</td>
+                          <td style="padding: 8px 0; color: #333;">${invoice.crNo}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Client:</td>
+                          <td style="padding: 8px 0; color: #333;">${client?.name || "Unknown"}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Employee:</td>
+                          <td style="padding: 8px 0; color: #333;">${invoice.employeeName}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Amount:</td>
+                          <td style="padding: 8px 0; color: #333; font-weight: 600;">${invoice.crCurrency} ${Number(invoice.amount).toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Period:</td>
+                          <td style="padding: 8px 0; color: #333;">${new Date(invoice.startDate).toLocaleDateString()} to ${new Date(invoice.endDate).toLocaleDateString()}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Status:</td>
+                          <td style="padding: 8px 0;">
+                            <span style="background-color: #22c55e; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;">Approved</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    
+                    <p style="color: #555; line-height: 1.6;">Please review and take necessary action.</p>
+                    <p style="color: #555; margin-top: 30px;">Best regards,<br><strong>Infiniti CMS Team</strong></p>
+                  </div>
+                </div>
+              `,
+            };
+
+            await fetch("http://localhost:5000/api/email/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(emailData),
+            });
+          } catch (emailError: any) {
+            console.error(`[WARN] Failed to send email to admin ${admin.email}:`, emailError.message);
+          }
+        }
+      }
+      
       res.json(invoice);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -908,10 +993,96 @@ export function registerRoutes(app: Express) {
         endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
       };
 
+      const oldInvoice = await storage.getCrInvoice(req.params.id);
       const invoice = await storage.updateCrInvoice(req.params.id, invoiceData);
       if (!invoice) {
         return res.status(404).json({ error: "CR Invoice not found" });
       }
+      
+      // Send email to all admin users if status changed to approved
+      if (invoice.status === "approved" && oldInvoice?.status !== "approved") {
+        const users = await storage.getUsers();
+        const adminUsers = users.filter(u => u.role === "admin");
+        const client = await storage.getClient(invoice.clientId);
+        
+        for (const admin of adminUsers) {
+          try {
+            const emailData = {
+              to: admin.email,
+              subject: "CR-Invoice Approved - Action Required",
+              message: `Hello ${admin.firstName} ${admin.lastName},
+
+A CR-Invoice has been approved in the system.
+
+CR-Invoice Details:
+- CR No: ${invoice.crNo}
+- Client: ${client?.name || "Unknown"}
+- Employee: ${invoice.employeeName}
+- Amount: ${invoice.crCurrency} ${Number(invoice.amount).toLocaleString()}
+- Period: ${new Date(invoice.startDate).toLocaleDateString()} to ${new Date(invoice.endDate).toLocaleDateString()}
+- Status: Approved
+
+Please review and take necessary action.
+
+Best regards,
+Infiniti CMS Team`,
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                  <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h2 style="color: #333; margin-bottom: 20px;">CR-Invoice Approved</h2>
+                    <p style="color: #555; line-height: 1.6;">Hello <strong>${admin.firstName} ${admin.lastName}</strong>,</p>
+                    <p style="color: #555; line-height: 1.6;">A CR-Invoice has been approved in the system.</p>
+                    
+                    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <h3 style="color: #333; margin-top: 0; margin-bottom: 15px;">CR-Invoice Details</h3>
+                      <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">CR No:</td>
+                          <td style="padding: 8px 0; color: #333;">${invoice.crNo}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Client:</td>
+                          <td style="padding: 8px 0; color: #333;">${client?.name || "Unknown"}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Employee:</td>
+                          <td style="padding: 8px 0; color: #333;">${invoice.employeeName}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Amount:</td>
+                          <td style="padding: 8px 0; color: #333; font-weight: 600;">${invoice.crCurrency} ${Number(invoice.amount).toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Period:</td>
+                          <td style="padding: 8px 0; color: #333;">${new Date(invoice.startDate).toLocaleDateString()} to ${new Date(invoice.endDate).toLocaleDateString()}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #666; font-weight: 600;">Status:</td>
+                          <td style="padding: 8px 0;">
+                            <span style="background-color: #22c55e; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;">Approved</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    
+                    <p style="color: #555; line-height: 1.6;">Please review and take necessary action.</p>
+                    <p style="color: #555; margin-top: 30px;">Best regards,<br><strong>Infiniti CMS Team</strong></p>
+                  </div>
+                </div>
+              `,
+            };
+
+            await fetch("http://localhost:5000/api/email/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(emailData),
+            });
+          } catch (emailError: any) {
+            console.error(`[WARN] Failed to send email to admin ${admin.email}:`, emailError.message);
+          }
+        }
+      }
+      
       res.json(invoice);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
