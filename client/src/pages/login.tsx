@@ -41,8 +41,10 @@ export default function Login() {
       sessionStorage.setItem("isLoggedIn", "true");
       sessionStorage.setItem("user", JSON.stringify(data));
       
-      // Force a page reload to ensure App.tsx picks up the new session state
-      window.location.href = "/dashboard";
+      // Use setTimeout to ensure sessionStorage is written before navigation
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 0);
     } catch (err: any) {
       setError("An error occurred during login. Please try again.");
       setIsLoading(false);

@@ -140,11 +140,23 @@ function Router() {
   // Listen for storage changes (in case of login from another tab)
   useEffect(() => {
     const checkAuth = () => {
-      setIsLoggedIn(sessionStorage.getItem("isLoggedIn") === "true");
+      const loggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loggedIn);
     };
 
+    // Check on mount
+    checkAuth();
+
+    // Listen for storage events from other tabs
     window.addEventListener("storage", checkAuth);
-    return () => window.removeEventListener("storage", checkAuth);
+    
+    // Also check periodically for same-tab changes
+    const interval = setInterval(checkAuth, 100);
+
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      clearInterval(interval);
+    };
   }, []);
 
   if (isLoggedIn) {
