@@ -43,7 +43,7 @@ export default function Login() {
       
       // Use setTimeout to ensure sessionStorage is written before navigation
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        window.location.href = "/";
       }, 0);
     } catch (err: any) {
       setError("An error occurred during login. Please try again.");
