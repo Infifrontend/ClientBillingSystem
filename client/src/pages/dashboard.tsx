@@ -191,14 +191,6 @@ export default function Dashboard() {
     <div className="space-y-0">
       <div className="bg-white">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-1">
-              Dashboard
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Overview of your client management and billing operations
-            </p>
-          </div>
           <div className="flex items-center gap-3">
             <Select
               value={selectedClientId}

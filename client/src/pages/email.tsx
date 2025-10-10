@@ -10,12 +10,6 @@ export default function EmailPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Email Communication</h1>
-          <p className="text-muted-foreground mt-1">
-            Send emails to clients, users, and team members
-          </p>
-        </div>
         <Button onClick={() => setIsDialogOpen(true)}>
           <Mail className="h-4 w-4 mr-2" />
           Compose Email

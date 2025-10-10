@@ -2,9 +2,22 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, AlertTriangle, Target, Brain, IndianRupee, Users } from "lucide-react";
+import {
+  TrendingUp,
+  AlertTriangle,
+  Target,
+  Brain,
+  IndianRupee,
+  Users,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function Insights() {
@@ -39,11 +52,6 @@ export default function Insights() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">AI Insights</h1>
-        <p className="text-muted-foreground">Revenue forecasting, client health & risk analysis powered by AI/ML</p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-chart-3/10 to-chart-3/5 border-chart-3/20">
           <CardHeader>
@@ -58,10 +66,17 @@ export default function Insights() {
               ₹{(insights?.revenueForecast?.amount || 0).toLocaleString()}
             </p>
             <div className="flex items-center gap-2">
-              <Progress value={insights?.revenueForecast?.confidence || 85} className="flex-1" />
-              <span className="text-sm font-medium">{insights?.revenueForecast?.confidence || 85}%</span>
+              <Progress
+                value={insights?.revenueForecast?.confidence || 85}
+                className="flex-1"
+              />
+              <span className="text-sm font-medium">
+                {insights?.revenueForecast?.confidence || 85}%
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">Confidence level</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Confidence level
+            </p>
           </CardContent>
         </Card>
 
@@ -78,7 +93,8 @@ export default function Insights() {
               {insights?.atRiskClients?.count || 0}
             </p>
             <p className="text-sm text-muted-foreground">
-              Total risk value: ₹{(insights?.atRiskClients?.totalValue || 0).toLocaleString()}
+              Total risk value: ₹
+              {(insights?.atRiskClients?.totalValue || 0).toLocaleString()}
             </p>
           </CardContent>
         </Card>
@@ -95,7 +111,11 @@ export default function Insights() {
             <p className="text-4xl font-bold font-mono mb-2 text-primary">
               {insights?.churnProbability || 12}%
             </p>
-            <Badge variant={insights?.churnProbability > 20 ? "destructive" : "default"}>
+            <Badge
+              variant={
+                insights?.churnProbability > 20 ? "destructive" : "default"
+              }
+            >
               {insights?.churnProbability > 20 ? "High Risk" : "Low Risk"}
             </Badge>
           </CardContent>
@@ -113,38 +133,47 @@ export default function Insights() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {insights?.clientHealthScores && insights.clientHealthScores.map((client: any) => (
-                <div key={client.id} className="space-y-2" data-testid={`client-health-${client.id}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium">{client.name}</p>
-                      <p className="text-xs text-muted-foreground">{client.industry}</p>
+              {insights?.clientHealthScores &&
+                insights.clientHealthScores.map((client: any) => (
+                  <div
+                    key={client.id}
+                    className="space-y-2"
+                    data-testid={`client-health-${client.id}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium">{client.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {client.industry}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          client.score >= 80
+                            ? "default"
+                            : client.score >= 50
+                              ? "secondary"
+                              : "destructive"
+                        }
+                      >
+                        {client.score}/100
+                      </Badge>
                     </div>
-                    <Badge
-                      variant={
+                    <Progress
+                      value={client.score}
+                      className={
                         client.score >= 80
-                          ? "default"
+                          ? "bg-chart-3/20"
                           : client.score >= 50
-                          ? "secondary"
-                          : "destructive"
+                            ? "bg-chart-4/20"
+                            : "bg-destructive/20"
                       }
-                    >
-                      {client.score}/100
-                    </Badge>
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {client.reason}
+                    </p>
                   </div>
-                  <Progress
-                    value={client.score}
-                    className={
-                      client.score >= 80
-                        ? "bg-chart-3/20"
-                        : client.score >= 50
-                        ? "bg-chart-4/20"
-                        : "bg-destructive/20"
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">{client.reason}</p>
-                </div>
-              ))}
+                ))}
             </div>
           </CardContent>
         </Card>
@@ -159,23 +188,32 @@ export default function Insights() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {insights?.profitabilityAnalysis && insights.profitabilityAnalysis.map((client: any, index: number) => (
-                <div key={client.id} className="flex items-center gap-4" data-testid={`profitability-${client.id}`}>
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-sm">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{client.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Revenue: ₹{client.revenue.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-chart-3">+{client.marginPercent}%</p>
-                    <p className="text-xs text-muted-foreground">Margin</p>
-                  </div>
-                </div>
-              ))}
+              {insights?.profitabilityAnalysis &&
+                insights.profitabilityAnalysis.map(
+                  (client: any, index: number) => (
+                    <div
+                      key={client.id}
+                      className="flex items-center gap-4"
+                      data-testid={`profitability-${client.id}`}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-sm">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{client.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Revenue: ₹{client.revenue.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-chart-3">
+                          +{client.marginPercent}%
+                        </p>
+                        <p className="text-xs text-muted-foreground">Margin</p>
+                      </div>
+                    </div>
+                  ),
+                )}
             </div>
           </CardContent>
         </Card>
@@ -187,32 +225,42 @@ export default function Insights() {
             <Brain className="h-5 w-5" />
             AI Recommendations
           </CardTitle>
-          <CardDescription>Actionable insights based on data analysis</CardDescription>
+          <CardDescription>
+            Actionable insights based on data analysis
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {insights?.recommendations && insights.recommendations.map((rec: any, index: number) => (
-              <div
-                key={index}
-                className="p-4 rounded-lg border bg-card hover-elevate"
-                data-testid={`recommendation-${index}`}
-              >
-                <div className="flex items-start gap-3">
-                  <Badge variant={rec.priority === "high" ? "destructive" : "default"}>
-                    {rec.priority}
-                  </Badge>
-                  <div className="flex-1">
-                    <h4 className="font-semibold mb-1">{rec.title}</h4>
-                    <p className="text-sm text-muted-foreground">{rec.description}</p>
-                    {rec.potentialImpact && (
-                      <p className="text-sm text-chart-3 font-medium mt-2">
-                        Potential impact: ₹{rec.potentialImpact.toLocaleString()}
+            {insights?.recommendations &&
+              insights.recommendations.map((rec: any, index: number) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg border bg-card hover-elevate"
+                  data-testid={`recommendation-${index}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <Badge
+                      variant={
+                        rec.priority === "high" ? "destructive" : "default"
+                      }
+                    >
+                      {rec.priority}
+                    </Badge>
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-1">{rec.title}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {rec.description}
                       </p>
-                    )}
+                      {rec.potentialImpact && (
+                        <p className="text-sm text-chart-3 font-medium mt-2">
+                          Potential impact: ₹
+                          {rec.potentialImpact.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </CardContent>
       </Card>

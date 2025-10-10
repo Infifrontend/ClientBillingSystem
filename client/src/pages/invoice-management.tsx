@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +20,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, FileText, Edit, Trash2, Download, Upload, MoreVertical } from "lucide-react";
+import {
+  Plus,
+  Search,
+  FileText,
+  Edit,
+  Trash2,
+  Download,
+  Upload,
+  MoreVertical,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +54,9 @@ export default function InvoiceManagement() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<CrInvoice | undefined>();
+  const [selectedInvoice, setSelectedInvoice] = useState<
+    CrInvoice | undefined
+  >();
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const { data: clients = [] } = useQuery<Client[]>({
@@ -104,39 +114,38 @@ export default function InvoiceManagement() {
 
   const getCurrencySymbol = (currency: string) => {
     switch (currency) {
-      case "USD": return "$";
-      case "EUR": return "€";
-      case "INR": return "₹";
-      default: return currency;
+      case "USD":
+        return "$";
+      case "EUR":
+        return "€";
+      case "INR":
+        return "₹";
+      default:
+        return currency;
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display">Invoice Management</h1>
-          <p className="text-muted-foreground">Manage CR invoices and track approval status</p>
-        </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => generateSampleInvoiceSheet()}
           >
             <Download className="h-4 w-4 mr-2" />
             Download Sample
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setIsBulkImportOpen(true)}
-          >
+          <Button variant="outline" onClick={() => setIsBulkImportOpen(true)}>
             <Upload className="h-4 w-4 mr-2" />
             Bulk Import
           </Button>
-          <Button onClick={() => {
-            setSelectedInvoice(undefined);
-            setIsDialogOpen(true);
-          }}>
+          <Button
+            onClick={() => {
+              setSelectedInvoice(undefined);
+              setIsDialogOpen(true);
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add CR Invoice
           </Button>
@@ -189,16 +198,24 @@ export default function InvoiceManagement() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              Loading...
+            </div>
           ) : invoices.length === 0 ? (
             <div className="p-12 text-center">
               <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">No CR Invoices found</h3>
-              <p className="text-muted-foreground mb-4">Get started by adding your first CR invoice</p>
-              <Button onClick={() => {
-                setSelectedInvoice(undefined);
-                setIsDialogOpen(true);
-              }}>
+              <h3 className="text-lg font-semibold mb-2">
+                No CR Invoices found
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Get started by adding your first CR invoice
+              </p>
+              <Button
+                onClick={() => {
+                  setSelectedInvoice(undefined);
+                  setIsDialogOpen(true);
+                }}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Add CR Invoice
               </Button>
@@ -220,16 +237,30 @@ export default function InvoiceManagement() {
               <TableBody>
                 {invoices.map((invoice) => (
                   <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{invoice.crNo}</TableCell>
+                    <TableCell className="font-medium">
+                      {invoice.crNo}
+                    </TableCell>
                     <TableCell>{invoice.clientName}</TableCell>
                     <TableCell>{invoice.employeeName}</TableCell>
                     <TableCell className="font-mono">
-                      {getCurrencySymbol(invoice.crCurrency)}{Number(invoice.amount).toLocaleString()}
+                      {getCurrencySymbol(invoice.crCurrency)}
+                      {Number(invoice.amount).toLocaleString()}
                     </TableCell>
-                    <TableCell>{new Date(invoice.startDate).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(invoice.endDate).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant={statusColors[invoice.status as keyof typeof statusColors]} className="capitalize">
+                      {new Date(invoice.startDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(invoice.endDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          statusColors[
+                            invoice.status as keyof typeof statusColors
+                          ]
+                        }
+                        className="capitalize"
+                      >
                         {invoice.status}
                       </Badge>
                     </TableCell>
@@ -246,7 +277,9 @@ export default function InvoiceManagement() {
                             Edit Invoice
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDelete(invoice.id, invoice.crNo)}
+                            onClick={() =>
+                              handleDelete(invoice.id, invoice.crNo)
+                            }
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />

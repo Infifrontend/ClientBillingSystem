@@ -432,12 +432,12 @@ export default function Reports() {
     })
     .map((client) => {
       const clientInvoices = invoices.filter(
-        (inv: Invoice) => inv.clientId === client.id && inv.status === "paid"
+        (inv: Invoice) => inv.clientId === client.id && inv.status === "paid",
       );
 
       const totalSales = clientInvoices.reduce(
         (sum, inv: Invoice) => sum + Number(inv.amount),
-        0
+        0,
       );
 
       const invoiceCount = clientInvoices.length;
@@ -463,12 +463,12 @@ export default function Reports() {
     .reduce((acc: any[], client) => {
       const region = client.region || "Unknown";
       const clientInvoices = invoices.filter(
-        (inv: Invoice) => inv.clientId === client.id && inv.status === "paid"
+        (inv: Invoice) => inv.clientId === client.id && inv.status === "paid",
       );
 
       const revenue = clientInvoices.reduce(
         (sum, inv: Invoice) => sum + Number(inv.amount),
-        0
+        0,
       );
 
       const existingRegion = acc.find((item) => item.region === region);
@@ -490,7 +490,10 @@ export default function Reports() {
   // Product-wise Report Data - Revenue by product/service category
   const productReportData = services
     .filter((service: Service) => {
-      if (selectedClients.length > 0 && !selectedClients.includes(service.clientId)) {
+      if (
+        selectedClients.length > 0 &&
+        !selectedClients.includes(service.clientId)
+      ) {
         return false;
       }
       return true;
@@ -499,7 +502,9 @@ export default function Reports() {
       const serviceType = service.serviceType || "Others";
       const amount = Number(service.amount);
 
-      const existingProduct = acc.find((item) => item.productType === serviceType);
+      const existingProduct = acc.find(
+        (item) => item.productType === serviceType,
+      );
       if (existingProduct) {
         existingProduct.revenue += amount;
         existingProduct.serviceCount += 1;
@@ -518,7 +523,10 @@ export default function Reports() {
   // Service Type Report Data - Detailed breakdown by service type
   const serviceTypeReportData = services
     .filter((service: Service) => {
-      if (selectedClients.length > 0 && !selectedClients.includes(service.clientId)) {
+      if (
+        selectedClients.length > 0 &&
+        !selectedClients.includes(service.clientId)
+      ) {
         return false;
       }
       return true;
@@ -546,10 +554,6 @@ export default function Reports() {
 
   return (
     <div className="space-y-0 relative">
-      <PageHeader
-        title="Reports"
-        subtitle="Financial analytics and outstanding invoices"
-      />
       <div className="">
         {/* Floating Filter Button */}
         <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -1043,12 +1047,18 @@ export default function Reports() {
                               ₹{item.totalSales.toLocaleString()}
                             </TableCell>
                             <TableCell className="text-center">
-                              <Badge variant="secondary" className="font-medium">
+                              <Badge
+                                variant="secondary"
+                                className="font-medium"
+                              >
                                 {item.invoiceCount}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right font-mono">
-                              ₹{Math.round(item.averageInvoiceValue).toLocaleString()}
+                              ₹
+                              {Math.round(
+                                item.averageInvoiceValue,
+                              ).toLocaleString()}
                             </TableCell>
                           </TableRow>
                         ))
@@ -1092,7 +1102,8 @@ export default function Reports() {
                             colSpan={4}
                             className="text-center py-8 text-muted-foreground"
                           >
-                            No geography data found matching the selected filters
+                            No geography data found matching the selected
+                            filters
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -1112,12 +1123,18 @@ export default function Reports() {
                               ₹{item.revenue.toLocaleString()}
                             </TableCell>
                             <TableCell className="text-center">
-                              <Badge variant="secondary" className="font-medium">
+                              <Badge
+                                variant="secondary"
+                                className="font-medium"
+                              >
                                 {item.clientCount}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right font-mono">
-                              ₹{Math.round(item.revenue / item.clientCount).toLocaleString()}
+                              ₹
+                              {Math.round(
+                                item.revenue / item.clientCount,
+                              ).toLocaleString()}
                             </TableCell>
                           </TableRow>
                         ))
@@ -1142,7 +1159,9 @@ export default function Reports() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/50">
-                        <TableHead className="font-semibold">Product Type</TableHead>
+                        <TableHead className="font-semibold">
+                          Product Type
+                        </TableHead>
                         <TableHead className="text-right font-semibold">
                           Total Revenue
                         </TableHead>
@@ -1183,12 +1202,18 @@ export default function Reports() {
                               ₹{item.revenue.toLocaleString()}
                             </TableCell>
                             <TableCell className="text-center">
-                              <Badge variant="secondary" className="font-medium">
+                              <Badge
+                                variant="secondary"
+                                className="font-medium"
+                              >
                                 {item.serviceCount}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right font-mono">
-                              ₹{Math.round(item.revenue / item.serviceCount).toLocaleString()}
+                              ₹
+                              {Math.round(
+                                item.revenue / item.serviceCount,
+                              ).toLocaleString()}
                             </TableCell>
                           </TableRow>
                         ))
@@ -1214,11 +1239,15 @@ export default function Reports() {
                     <TableHeader>
                       <TableRow className="bg-muted/50">
                         <TableHead className="font-semibold">Client</TableHead>
-                        <TableHead className="font-semibold">Service Type</TableHead>
+                        <TableHead className="font-semibold">
+                          Service Type
+                        </TableHead>
                         <TableHead className="text-right font-semibold">
                           Amount
                         </TableHead>
-                        <TableHead className="font-semibold">Billing Cycle</TableHead>
+                        <TableHead className="font-semibold">
+                          Billing Cycle
+                        </TableHead>
                         <TableHead className="text-center font-semibold">
                           Status
                         </TableHead>
@@ -1231,7 +1260,8 @@ export default function Reports() {
                             colSpan={5}
                             className="text-center py-8 text-muted-foreground"
                           >
-                            No service type data found matching the selected filters
+                            No service type data found matching the selected
+                            filters
                           </TableCell>
                         </TableRow>
                       ) : (

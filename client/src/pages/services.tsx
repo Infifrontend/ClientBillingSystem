@@ -162,17 +162,6 @@ export default function Services() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1
-            className="text-3xl font-bold font-display mb-2"
-            data-testid="page-title"
-          >
-            Services & Billing
-          </h1>
-          <p className="text-muted-foreground">
-            Manage client services and billing records
-          </p>
-        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"

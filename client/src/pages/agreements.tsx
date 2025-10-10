@@ -6,12 +6,57 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, FileText, Calendar, IndianRupee, AlertCircle, MoreVertical, Edit, Eye, Trash2, Download, Upload } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Plus,
+  Search,
+  FileText,
+  Calendar,
+  IndianRupee,
+  AlertCircle,
+  MoreVertical,
+  Edit,
+  Eye,
+  Trash2,
+  Download,
+  Upload,
+} from "lucide-react";
 import { AgreementFormDialog } from "@/components/agreement-form-dialog";
 import { AgreementBulkImportDialog } from "@/components/agreement-bulk-import-dialog";
 import { generateSampleAgreementSheet } from "@/lib/agreementImport";
@@ -27,7 +72,10 @@ export default function Agreements() {
   const [previewAgreement, setPreviewAgreement] = useState<any | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [agreementToDelete, setAgreementToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [agreementToDelete, setAgreementToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [editingAgreement, setEditingAgreement] = useState<any | null>(null);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
@@ -50,7 +98,8 @@ export default function Agreements() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
-      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
+      if (statusFilter && statusFilter !== "all")
+        params.append("status", statusFilter);
 
       const response = await fetch(`/api/agreements?${params.toString()}`, {
         credentials: "include",
@@ -66,21 +115,26 @@ export default function Agreements() {
 
   const deleteMutation = useMutation({
     mutationFn: async (agreementId: string) => {
-      const response = await apiRequest("DELETE", `/api/agreements/${agreementId}`);
+      const response = await apiRequest(
+        "DELETE",
+        `/api/agreements/${agreementId}`,
+      );
       return response;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/agreements"] });
       toast({
         title: "Success",
-        description: data?.message || "Agreement has been deleted successfully.",
+        description:
+          data?.message || "Agreement has been deleted successfully.",
       });
     },
     onError: (error: any) => {
-      console.error('Delete error:', error);
+      console.error("Delete error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete agreement. Please try again.",
+        description:
+          error.message || "Failed to delete agreement. Please try again.",
         variant: "destructive",
       });
     },
@@ -132,7 +186,8 @@ export default function Agreements() {
 
   const getDaysUntilExpiry = (endDate: string) => {
     const days = Math.floor(
-      (new Date(endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      (new Date(endDate).getTime() - new Date().getTime()) /
+        (1000 * 60 * 60 * 24),
     );
     return days;
   };
@@ -140,28 +195,27 @@ export default function Agreements() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-display mb-2" data-testid="page-title">Agreements</h1>
-          <p className="text-muted-foreground">Manage client contracts and renewals</p>
-        </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => generateSampleAgreementSheet()}
             data-testid="button-download-sample"
           >
             <Download className="h-4 w-4 mr-2" />
             Download Sample
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setIsBulkImportOpen(true)}
             data-testid="button-bulk-import"
           >
             <Upload className="h-4 w-4 mr-2" />
             Bulk Import
           </Button>
-          <Button data-testid="button-add-agreement" onClick={() => setIsDialogOpen(true)}>
+          <Button
+            data-testid="button-add-agreement"
+            onClick={() => setIsDialogOpen(true)}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Agreement
           </Button>
@@ -182,7 +236,10 @@ export default function Agreements() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[200px]" data-testid="select-status">
+              <SelectTrigger
+                className="w-full md:w-[200px]"
+                data-testid="select-status"
+              >
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -200,7 +257,10 @@ export default function Agreements() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-total">
+            <CardTitle
+              className="text-2xl font-bold font-mono"
+              data-testid="stat-total"
+            >
               {agreements?.stats?.total || 0}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Total Agreements</p>
@@ -209,7 +269,10 @@ export default function Agreements() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono text-chart-4" data-testid="stat-expiring">
+            <CardTitle
+              className="text-2xl font-bold font-mono text-chart-4"
+              data-testid="stat-expiring"
+            >
               {agreements?.stats?.expiringSoon || 0}
             </CardTitle>
             <p className="text-sm text-muted-foreground">Expiring in 90 Days</p>
@@ -218,10 +281,15 @@ export default function Agreements() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold font-mono" data-testid="stat-value">
+            <CardTitle
+              className="text-2xl font-bold font-mono"
+              data-testid="stat-value"
+            >
               ₹{(agreements?.stats?.totalValue || 0).toLocaleString()}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">Total Contract Value</p>
+            <p className="text-sm text-muted-foreground">
+              Total Contract Value
+            </p>
           </CardHeader>
         </Card>
       </div>
@@ -250,7 +318,9 @@ export default function Agreements() {
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Value</TableHead>
-                  <TableHead className="text-center w-[80px]">Actions</TableHead>
+                  <TableHead className="text-center w-[80px]">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -259,14 +329,21 @@ export default function Agreements() {
                   const isExpiringSoon = daysLeft <= 90 && daysLeft >= 0;
 
                   return (
-                    <TableRow key={agreement.id} className="cursor-pointer hover:bg-muted/50" data-testid={`agreement-${agreement.id}`}>
+                    <TableRow
+                      key={agreement.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      data-testid={`agreement-${agreement.id}`}
+                    >
                       <TableCell>
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                           <FileText className="h-5 w-5 text-primary" />
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-semibold" data-testid={`agreement-name-${agreement.id}`}>
+                        <div
+                          className="font-semibold"
+                          data-testid={`agreement-name-${agreement.id}`}
+                        >
                           {agreement.agreementName}
                         </div>
                         {isExpiringSoon && (
@@ -282,13 +359,17 @@ export default function Agreements() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusBadgeVariant(agreement.status)}>
-                          {agreement.status.replace(/_/g, ' ')}
+                        <Badge
+                          variant={getStatusBadgeVariant(agreement.status)}
+                        >
+                          {agreement.status.replace(/_/g, " ")}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         {agreement.paymentTerms ? (
-                          <span className="text-sm">{agreement.paymentTerms}</span>
+                          <span className="text-sm">
+                            {agreement.paymentTerms}
+                          </span>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}
@@ -296,13 +377,17 @@ export default function Agreements() {
                       <TableCell>
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{new Date(agreement.startDate).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(agreement.startDate).toLocaleDateString()}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{new Date(agreement.endDate).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(agreement.endDate).toLocaleDateString()}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -318,21 +403,34 @@ export default function Agreements() {
                       <TableCell className="text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" data-testid={`actions-menu-${agreement.id}`}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              data-testid={`actions-menu-${agreement.id}`}
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(agreement)}>
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(agreement)}
+                            >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Agreement
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handlePreview(agreement)}>
+                            <DropdownMenuItem
+                              onClick={() => handlePreview(agreement)}
+                            >
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleDelete(agreement.id, agreement.agreementName)}
+                              onClick={() =>
+                                handleDelete(
+                                  agreement.id,
+                                  agreement.agreementName,
+                                )
+                              }
                               className="text-destructive focus:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
@@ -353,8 +451,13 @@ export default function Agreements() {
           <CardContent className="p-12 text-center">
             <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-lg font-semibold mb-2">No agreements found</h3>
-            <p className="text-muted-foreground mb-4">Get started by creating your first agreement</p>
-            <Button data-testid="button-add-first-agreement" onClick={() => setIsDialogOpen(true)}>
+            <p className="text-muted-foreground mb-4">
+              Get started by creating your first agreement
+            </p>
+            <Button
+              data-testid="button-add-first-agreement"
+              onClick={() => setIsDialogOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Agreement
             </Button>
@@ -362,8 +465,8 @@ export default function Agreements() {
         </Card>
       )}
 
-      <AgreementFormDialog 
-        open={isDialogOpen} 
+      <AgreementFormDialog
+        open={isDialogOpen}
         onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) setEditingAgreement(null);
@@ -376,17 +479,27 @@ export default function Agreements() {
         onOpenChange={setIsBulkImportOpen}
       />
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{agreementToDelete?.name}</strong>. This action cannot be undone.
+              This will permanently delete{" "}
+              <strong>{agreementToDelete?.name}</strong>. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setAgreementToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogCancel onClick={() => setAgreementToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -402,12 +515,18 @@ export default function Agreements() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Agreement Information</CardTitle>
+                  <CardTitle className="text-lg">
+                    Agreement Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Agreement Name</p>
-                    <p className="font-medium">{previewAgreement.agreementName}</p>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Agreement Name
+                    </p>
+                    <p className="font-medium">
+                      {previewAgreement.agreementName}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Client</p>
@@ -415,19 +534,27 @@ export default function Agreements() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Status</p>
-                    <Badge variant={getStatusBadgeVariant(previewAgreement.status)}>
-                      {previewAgreement.status.replace(/_/g, ' ')}
+                    <Badge
+                      variant={getStatusBadgeVariant(previewAgreement.status)}
+                    >
+                      {previewAgreement.status.replace(/_/g, " ")}
                     </Badge>
                   </div>
                   {previewAgreement.paymentTerms && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Payment Terms</p>
-                      <p className="font-medium">{previewAgreement.paymentTerms}</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Payment Terms
+                      </p>
+                      <p className="font-medium">
+                        {previewAgreement.paymentTerms}
+                      </p>
                     </div>
                   )}
                   {previewAgreement.autoRenewal && (
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Auto-Renewal</p>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Auto-Renewal
+                      </p>
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-chart-3" />
                         <span className="font-medium">Enabled</span>
@@ -447,14 +574,20 @@ export default function Agreements() {
                       <Calendar className="h-4 w-4" />
                       Start Date
                     </p>
-                    <p className="font-medium">{new Date(previewAgreement.startDate).toLocaleDateString()}</p>
+                    <p className="font-medium">
+                      {new Date(
+                        previewAgreement.startDate,
+                      ).toLocaleDateString()}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1 flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       End Date
                     </p>
-                    <p className="font-medium">{new Date(previewAgreement.endDate).toLocaleDateString()}</p>
+                    <p className="font-medium">
+                      {new Date(previewAgreement.endDate).toLocaleDateString()}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -474,24 +607,47 @@ export default function Agreements() {
                         ₹{previewAgreement.value.toLocaleString()}
                       </p>
                     </div>
-                    {(previewAgreement.year1Fee || previewAgreement.year2Fee || previewAgreement.year3Fee) && (
+                    {(previewAgreement.year1Fee ||
+                      previewAgreement.year2Fee ||
+                      previewAgreement.year3Fee) && (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
                         {previewAgreement.year1Fee && (
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">Year 1 Fee</p>
-                            <p className="font-medium font-mono">₹{Number(previewAgreement.year1Fee).toLocaleString()}</p>
+                            <p className="text-sm text-muted-foreground mb-1">
+                              Year 1 Fee
+                            </p>
+                            <p className="font-medium font-mono">
+                              ₹
+                              {Number(
+                                previewAgreement.year1Fee,
+                              ).toLocaleString()}
+                            </p>
                           </div>
                         )}
                         {previewAgreement.year2Fee && (
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">Year 2 Fee</p>
-                            <p className="font-medium font-mono">₹{Number(previewAgreement.year2Fee).toLocaleString()}</p>
+                            <p className="text-sm text-muted-foreground mb-1">
+                              Year 2 Fee
+                            </p>
+                            <p className="font-medium font-mono">
+                              ₹
+                              {Number(
+                                previewAgreement.year2Fee,
+                              ).toLocaleString()}
+                            </p>
                           </div>
                         )}
                         {previewAgreement.year3Fee && (
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">Year 3 Fee</p>
-                            <p className="font-medium font-mono">₹{Number(previewAgreement.year3Fee).toLocaleString()}</p>
+                            <p className="text-sm text-muted-foreground mb-1">
+                              Year 3 Fee
+                            </p>
+                            <p className="font-medium font-mono">
+                              ₹
+                              {Number(
+                                previewAgreement.year3Fee,
+                              ).toLocaleString()}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -501,7 +657,10 @@ export default function Agreements() {
               )}
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPreviewOpen(false)}
+                >
                   Close
                 </Button>
               </div>

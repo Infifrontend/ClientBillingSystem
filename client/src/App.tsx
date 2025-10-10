@@ -24,7 +24,7 @@ import Login from "@/pages/login";
 
 function AuthenticatedRoutes() {
   const [location] = useLocation();
-  
+
   const style = {
     "--sidebar-width": "16.25rem",
     "--sidebar-width-icon": "4rem",
@@ -35,52 +35,52 @@ function AuthenticatedRoutes() {
     if (location === "/") {
       return {
         title: "Dashboard",
-        description: "Overview of key metrics and performance indicators"
+        description: "Overview of key metrics and performance indicators",
       };
     } else if (location.startsWith("/clients")) {
       return {
         title: "Client Management",
-        description: "Manage your client portfolio and relationships"
+        description: "Manage your client portfolio and relationships",
       };
     } else if (location === "/services") {
       return {
         title: "Services & Billing",
-        description: "Manage client services and billing records"
+        description: "Manage client services and billing records",
       };
     } else if (location === "/agreements") {
       return {
         title: "Agreements",
-        description: "Manage client contracts and renewals"
+        description: "Manage client contracts and renewals",
       };
     } else if (location === "/reports") {
       return {
         title: "Reports",
-        description: "Generate and view detailed business reports"
+        description: "Generate and view detailed business reports",
       };
     } else if (location === "/insights") {
       return {
         title: "AI Insights",
-        description: "Data-driven insights and recommendations"
+        description: "Data-driven insights and recommendations",
       };
     } else if (location === "/users") {
       return {
         title: "User Management",
-        description: "Manage application users, roles, and access permissions"
+        description: "Manage application users, roles, and access permissions",
       };
     } else if (location === "/invoice-management") {
       return {
         title: "Invoice Management",
-        description: "Manage invoices and payment records"
+        description: "Manage invoices and payment records",
       };
     } else if (location === "/email") {
       return {
         title: "Email Communication",
-        description: "Send and manage email communications"
+        description: "Send and manage email communications",
       };
     }
     return {
       title: "Client Management & Billing System",
-      description: "Infiniti Software Solutions"
+      description: "Infiniti Software Solutions",
     };
   };
 
