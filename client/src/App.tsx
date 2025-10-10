@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -23,10 +23,68 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 
 function AuthenticatedRoutes() {
+  const [location] = useLocation();
+  
   const style = {
     "--sidebar-width": "16.25rem",
     "--sidebar-width-icon": "4rem",
   };
+
+  // Define page headers based on route
+  const getPageHeader = () => {
+    if (location === "/") {
+      return {
+        title: "Dashboard",
+        description: "Overview of key metrics and performance indicators"
+      };
+    } else if (location.startsWith("/clients")) {
+      return {
+        title: "Client Management",
+        description: "Manage your client portfolio and relationships"
+      };
+    } else if (location === "/services") {
+      return {
+        title: "Services & Billing",
+        description: "Manage client services and billing records"
+      };
+    } else if (location === "/agreements") {
+      return {
+        title: "Agreements",
+        description: "Manage client contracts and renewals"
+      };
+    } else if (location === "/reports") {
+      return {
+        title: "Reports",
+        description: "Generate and view detailed business reports"
+      };
+    } else if (location === "/insights") {
+      return {
+        title: "AI Insights",
+        description: "Data-driven insights and recommendations"
+      };
+    } else if (location === "/users") {
+      return {
+        title: "User Management",
+        description: "Manage application users, roles, and access permissions"
+      };
+    } else if (location === "/invoice-management") {
+      return {
+        title: "Invoice Management",
+        description: "Manage invoices and payment records"
+      };
+    } else if (location === "/email") {
+      return {
+        title: "Email Communication",
+        description: "Send and manage email communications"
+      };
+    }
+    return {
+      title: "Client Management & Billing System",
+      description: "Infiniti Software Solutions"
+    };
+  };
+
+  const pageHeader = getPageHeader();
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
@@ -35,9 +93,9 @@ function AuthenticatedRoutes() {
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b bg-card">
             <div>
-              <h1 className="text-3xl font-bold">User Management</h1>
+              <h1 className="text-3xl font-bold">{pageHeader.title}</h1>
               <p className="text-muted-foreground mt-1">
-                Manage application users, roles, and access permissions
+                {pageHeader.description}
               </p>
             </div>
             <SidebarTrigger data-testid="button-sidebar-toggle" />
