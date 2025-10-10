@@ -1108,7 +1108,7 @@ export function registerRoutes(app: Express) {
       const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       const resetLink = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
       
-      // Send password reset email
+      // Send password reset email with HTML formatting
       const emailData = {
         to: user.email,
         subject: "Password Reset Request - Infiniti CMS",
@@ -1125,6 +1125,24 @@ If you did not request a password reset, please ignore this email or contact you
 
 Best regards,
 Infiniti CMS Team`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+            <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #333; margin-bottom: 20px;">Password Reset Request</h2>
+              <p style="color: #555; line-height: 1.6;">Hello <strong>${user.firstName} ${user.lastName}</strong>,</p>
+              <p style="color: #555; line-height: 1.6;">We received a request to reset your password for your Infiniti CMS account.</p>
+              <p style="color: #555; line-height: 1.6;">To reset your password, please click the button below:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetLink}" style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">Reset Password</a>
+              </div>
+              <p style="color: #555; line-height: 1.6; font-size: 14px;">Or copy and paste this link into your browser:</p>
+              <p style="color: #4F46E5; word-break: break-all; font-size: 14px;"><a href="${resetLink}" style="color: #4F46E5;">${resetLink}</a></p>
+              <p style="color: #777; line-height: 1.6; font-size: 13px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">This link will expire in 24 hours for security reasons.</p>
+              <p style="color: #777; line-height: 1.6; font-size: 13px;">If you did not request a password reset, please ignore this email or contact your system administrator.</p>
+              <p style="color: #555; margin-top: 30px;">Best regards,<br><strong>Infiniti CMS Team</strong></p>
+            </div>
+          </div>
+        `,
       };
 
       // Use the email service

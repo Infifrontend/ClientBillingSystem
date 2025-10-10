@@ -6,6 +6,7 @@ interface EmailRequest {
   to: string;
   subject: string;
   message: string;
+  html?: string;
   cc?: string;
   bcc?: string;
 }
@@ -45,13 +46,15 @@ export async function sendEmail(req: Request, res: Response) {
     // Verify transporter configuration
     await transporter.verify();
 
+    const { html, ...restBody } = req.body;
+    
     // Email options
     const mailOptions = {
       from: `"${process.env.SMTP_FROM_NAME || 'Infiniti CMS'}" <${process.env.SMTP_USER}>`,
       to,
       subject,
       text: message,
-      html: `<div style="font-family: Arial, sans-serif; padding: 20px;">
+      html: html || `<div style="font-family: Arial, sans-serif; padding: 20px;">
         <p style="white-space: pre-wrap;">${message.replace(/\n/g, '<br>')}</p>
       </div>`,
       ...(cc && { cc }),
